@@ -1,0 +1,28 @@
+{
+  "name": "wdd",
+  "version": "0.1.0",
+  "description": "Ward-Driven Development — a control system for AI-assisted software construction",
+  "type": "module",
+  "bin": {
+    "wdd": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test --import tsx src/**/*.test.ts",
+    "dev": "tsx src/cli.ts"
+  },
+  "keywords": [
+    "wdd",
+    "ward-driven-development",
+    "ai",
+    "tdd",
+    "methodology"
+  ],
+  "author": "Dennis",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
