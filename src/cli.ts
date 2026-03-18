@@ -9,6 +9,7 @@ import { assembleSession } from "./commands/session.js";
 import { validateProject } from "./commands/validate.js";
 import { printStatus, runProgress } from "./commands/status-progress.js";
 import { searchMemory } from "./commands/search.js";
+import { createEpic } from "./commands/epic-create.js";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -128,6 +129,29 @@ async function main(): Promise<void> {
     }
     case "ward": {
       await handleWard();
+      break;
+    }
+    case "epic": {
+      const sub = args[1];
+      switch (sub) {
+        case "create": {
+          const positional = getPositional(2);
+          const name = positional[0];
+          if (!name) {
+            throw new Error("Usage: wdd epic create <name> --slug <slug>");
+          }
+          const slug = getFlag("slug");
+          if (!slug) {
+            throw new Error("--slug is required for epic create");
+          }
+          await createEpic(process.cwd(), { name, slug });
+          break;
+        }
+        default:
+          console.error(`Unknown epic subcommand: ${sub}`);
+          console.error('Run "wdd --help" for usage.');
+          process.exit(1);
+      }
       break;
     }
     case "session": {

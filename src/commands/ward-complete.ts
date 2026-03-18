@@ -62,8 +62,15 @@ export async function completeWard(
   fs.writeFileSync(progressPath, progress);
   steps.push("Regenerated PROGRESS.md");
 
+  // Step 4: Commit reminder
+  const wardName = frontmatter.name as string;
+  steps.push(`→ Remember to commit: git add .wdd/ && git commit -m "Ward ${wardId} complete: ${wardName}"`);
+
+  // Step 5: CONTEXT.md update reminder
+  steps.push(`⚠ CONTEXT.md was not modified. Review and update it now:\n  - Update "Current State" to reflect Ward ${wardId} completion\n  - Update "What Comes Next" for the next Ward\n  - Run: wdd validate (checks CONTEXT.md size)`);
+
   for (const step of steps) {
-    console.log(`  ✓ ${step}`);
+    console.log(`  ${step}`);
   }
   console.log(`\nWard ${wardId} complete.`);
 
