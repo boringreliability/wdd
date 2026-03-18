@@ -49,11 +49,13 @@ Commands:
   ward status         Update Ward status
   ward reopen         Reopen a completed Ward
   complete            Complete a Ward (step-by-step)
+  epic create         Create a new Epic
   session             Assemble context for AI consumption
   status              Show progress dashboard
   progress            Regenerate PROGRESS.md
   validate            Check structure and invariants
   search              Search project memory
+  bootstrap           Install AI adapter (claude|cursor)
 
 Options:
   --help              Show this help message
