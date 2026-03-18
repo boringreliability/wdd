@@ -74,7 +74,80 @@ name: wdd
 description: Ward-Driven Development workflow for ${projectName}. Run this at session start and follow checkpoint discipline.
 ---
 
-${getSkillContent(projectName)}`;
+${getSkillContent(projectName)}
+## User-Invocable Skills
+
+### /wdd
+Get project context and orient yourself.
+
+1. Run \`wdd session\` and read the full output carefully
+2. Run \`wdd validate\` to check project health
+3. Summarize for the user:
+   - Current state of the project
+   - Which Ward is active and its status
+   - Any blockers or warnings from validate
+4. Ask the user what they want to work on
+
+### /ward
+Continue working on the current Ward. Behavior depends on ward status.
+
+1. Run \`wdd session\` to find the current ward and its status
+2. Based on the ward's status:
+
+   **planned** — Start Red phase:
+   - Run \`wdd ward status <id> red\`
+   - Write tests per the ward spec's Tests table
+   - Present tests to user
+   - ⏸️ STOP — Wait for explicit approval. Do NOT proceed.
+
+   **red** — Tests written, awaiting approval:
+   - Present the tests if not yet shown
+   - ⏸️ STOP — Wait for explicit approval. Do NOT proceed.
+
+   **approved** — Start Gold phase:
+   - Run \`wdd ward status <id> gold\`
+   - Implement until all tests pass
+   - Present implementation to user
+   - ⏸️ STOP — Wait for explicit approval. Do NOT proceed.
+
+   **gold** — Implementation done, awaiting approval:
+   - Run the tests. If failing, fix implementation (not tests).
+   - Present results to user
+   - ⏸️ STOP — Wait for explicit approval. Do NOT proceed.
+   - When approved: run \`wdd complete <id>\` and follow its output
+
+   **complete** — Ward is done:
+   - Tell user this ward is complete
+   - Suggest \`/ward-new\` to create the next ward
+
+   **blocked** — Ward is blocked:
+   - Show what the ward depends on
+   - Suggest resolving the blocker
+
+3. NEVER skip a checkpoint. NEVER proceed without the user saying "approved" or "godkendt".
+
+### /ward-new
+Create a new Ward with full spec and tests.
+
+1. Ask the user for:
+   - Ward name (what it builds)
+   - Epic (suggest existing epics from \`.wdd/epics/\`)
+   - Estimated test count
+2. Run \`wdd ward create "Name" --epic <slug> --tests <N>\`
+3. Open the created ward file and write the full spec:
+   - Scope (one paragraph)
+   - Inputs (what it uses from previous wards)
+   - Outputs (what it produces)
+   - Specification (detailed technical spec)
+   - Tests table (# | test_name | what it verifies)
+   - Must NOT list (explicit constraints)
+   - Must DO list (explicit requirements)
+   - Verification (how to prove it's done)
+4. Run \`wdd ward status <id> red\`
+5. Write the test file based on the Tests table
+6. Present tests to user
+7. ⏸️ STOP — Wait for explicit approval before implementing
+`;
 }
 
 export function getCursorRule(projectName: string): string {

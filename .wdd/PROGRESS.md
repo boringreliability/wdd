@@ -1,7 +1,7 @@
 # Progress — wdd
 
 ## Summary
-13 of 13 Wards complete · 102 estimated tests · 0 blocked
+14 of 14 Wards complete · 110 estimated tests · 0 blocked
 
 ## Ward Status
 | Ward | Name | Tests | Status | Date |
@@ -19,6 +19,7 @@
 | 10 | Epic Create Command | 7 | ✅ Complete | 2026-03-18 |
 | 11 | WDD Skill Content | 6 | ✅ Complete | 2026-03-18 |
 | 12 | Bootstrap Command | 8 | ✅ Complete | 2026-03-18 |
+| 13 | Skill Commands | 8 | ✅ Complete | 2026-03-18 |
 
 ## Test Summary
-- Estimated total: 102
+- Estimated total: 110
