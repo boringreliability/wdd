@@ -1,7 +1,7 @@
 # Progress — wdd
 
 ## Summary
-14 of 14 Wards complete · 110 estimated tests · 0 blocked
+15 of 15 Wards complete · 110 estimated tests · 0 blocked
 
 ## Ward Status
 | Ward | Name | Tests | Status | Date |
@@ -20,6 +20,7 @@
 | 11 | WDD Skill Content | 6 | ✅ Complete | 2026-03-18 |
 | 12 | Bootstrap Command | 8 | ✅ Complete | 2026-03-18 |
 | 13 | Skill Commands | 8 | ✅ Complete | 2026-03-18 |
+| 13b | Skill Commands (fix b) | 0 | ✅ Complete | 2026-03-18 |
 
 ## Test Summary
 - Estimated total: 110

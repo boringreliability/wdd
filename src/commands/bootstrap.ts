@@ -1,40 +1,58 @@
 import fs from "node:fs";
 import path from "node:path";
-import { getClaudeSkill, getCursorRule } from "../templates/adapter-content.js";
-
-const ADAPTERS: Record<string, { dir: string; file: string; generator: (name: string) => string }> = {
-  claude: {
-    dir: path.join(".claude", "skills"),
-    file: "wdd.md",
-    generator: getClaudeSkill,
-  },
-  cursor: {
-    dir: path.join(".cursor", "rules"),
-    file: "wdd.mdc",
-    generator: getCursorRule,
-  },
-};
+import { getClaudeSkills, getCursorRule } from "../templates/adapter-content.js";
 
 export async function bootstrapAdapter(
   projectDir: string,
   adapter: string
-): Promise<string> {
-  const config = ADAPTERS[adapter];
-  if (!config) {
-    throw new Error(`Unknown adapter: ${adapter}. Available: ${Object.keys(ADAPTERS).join(", ")}`);
+): Promise<string[]> {
+  const projectName = readProjectName(projectDir);
+
+  switch (adapter) {
+    case "claude": {
+      return bootstrapClaude(projectDir, projectName);
+    }
+    case "cursor": {
+      return bootstrapCursor(projectDir, projectName);
+    }
+    default:
+      throw new Error(`Unknown adapter: ${adapter}. Available: claude, cursor`);
+  }
+}
+
+function bootstrapClaude(projectDir: string, projectName: string): string[] {
+  const skillsDir = path.join(projectDir, ".claude", "skills");
+  const skills = getClaudeSkills(projectName);
+  const created: string[] = [];
+
+  // Remove old flat file format if it exists
+  const oldFile = path.join(skillsDir, "wdd.md");
+  if (fs.existsSync(oldFile)) {
+    fs.unlinkSync(oldFile);
   }
 
-  const projectName = readProjectName(projectDir);
-  const content = config.generator(projectName);
+  for (const skill of skills) {
+    const dir = path.join(skillsDir, skill.dir);
+    fs.mkdirSync(dir, { recursive: true });
+    const filePath = path.join(dir, "SKILL.md");
+    fs.writeFileSync(filePath, skill.content);
+    created.push(`${skill.dir}/SKILL.md`);
+    console.log(`  /${skill.dir} → .claude/skills/${skill.dir}/SKILL.md`);
+  }
 
-  const targetDir = path.join(projectDir, config.dir);
-  fs.mkdirSync(targetDir, { recursive: true });
+  console.log(`\nInstalled ${created.length} WDD skills for Claude Code.`);
+  return created;
+}
 
-  const filePath = path.join(targetDir, config.file);
-  fs.writeFileSync(filePath, content);
+function bootstrapCursor(projectDir: string, projectName: string): string[] {
+  const rulesDir = path.join(projectDir, ".cursor", "rules");
+  fs.mkdirSync(rulesDir, { recursive: true });
 
-  console.log(`Installed WDD ${adapter} adapter: ${config.dir}/${config.file}`);
-  return filePath;
+  const filePath = path.join(rulesDir, "wdd.mdc");
+  fs.writeFileSync(filePath, getCursorRule(projectName));
+
+  console.log(`Installed WDD rule: .cursor/rules/wdd.mdc`);
+  return [filePath];
 }
 
 function readProjectName(projectDir: string): string {

@@ -48,45 +48,52 @@ describe("Ward 012: Bootstrap Command", () => {
     cleanup(tmpDir);
   });
 
-  // Test 1: creates .claude/skills/wdd.md
-  it("bootstrap_claude_creates_file", async () => {
+  // Test 1: creates skill directories with SKILL.md
+  it("bootstrap_claude_creates_skills", async () => {
     await bootstrapAdapter(tmpDir, "claude");
 
-    const filePath = path.join(tmpDir, ".claude", "skills", "wdd.md");
-    assert.ok(fs.existsSync(filePath), ".claude/skills/wdd.md should exist");
+    const skillsDir = path.join(tmpDir, ".claude", "skills");
+    assert.ok(fs.existsSync(path.join(skillsDir, "wdd", "SKILL.md")), "wdd/SKILL.md should exist");
+    assert.ok(fs.existsSync(path.join(skillsDir, "ward", "SKILL.md")), "ward/SKILL.md should exist");
+    assert.ok(fs.existsSync(path.join(skillsDir, "ward-new", "SKILL.md")), "ward-new/SKILL.md should exist");
   });
 
-  // Test 2: claude file contains WDD content
-  it("bootstrap_claude_content", async () => {
+  // Test 2: each skill has correct name in frontmatter matching directory
+  it("bootstrap_claude_skill_names", async () => {
+    await bootstrapAdapter(tmpDir, "claude");
+
+    const skillsDir = path.join(tmpDir, ".claude", "skills");
+    const wddContent = fs.readFileSync(path.join(skillsDir, "wdd", "SKILL.md"), "utf-8");
+    const wardContent = fs.readFileSync(path.join(skillsDir, "ward", "SKILL.md"), "utf-8");
+    const wardNewContent = fs.readFileSync(path.join(skillsDir, "ward-new", "SKILL.md"), "utf-8");
+
+    assert.ok(wddContent.includes("name: wdd"), "wdd skill should have name: wdd");
+    assert.ok(wardContent.includes("name: ward"), "ward skill should have name: ward");
+    assert.ok(wardNewContent.includes("name: ward-new"), "ward-new skill should have name: ward-new");
+  });
+
+  // Test 3: wdd skill contains session context and CLI commands
+  it("bootstrap_claude_wdd_content", async () => {
     await bootstrapAdapter(tmpDir, "claude");
 
     const content = fs.readFileSync(
-      path.join(tmpDir, ".claude", "skills", "wdd.md"),
+      path.join(tmpDir, ".claude", "skills", "wdd", "SKILL.md"),
       "utf-8"
     );
     assert.ok(content.includes("wdd session"), "Should mention wdd session");
     assert.ok(content.includes("STOP"), "Should mention checkpoints");
-    assert.ok(content.includes("name:"), "Should have skill frontmatter");
+    assert.ok(content.includes("CLI Commands"), "Should have CLI reference");
   });
 
-  // Test 3: creates .cursor/rules/wdd.mdc
+  // Test 4: creates .cursor/rules/wdd.mdc
   it("bootstrap_cursor_creates_file", async () => {
     await bootstrapAdapter(tmpDir, "cursor");
 
     const filePath = path.join(tmpDir, ".cursor", "rules", "wdd.mdc");
     assert.ok(fs.existsSync(filePath), ".cursor/rules/wdd.mdc should exist");
-  });
 
-  // Test 4: cursor file has alwaysApply
-  it("bootstrap_cursor_content", async () => {
-    await bootstrapAdapter(tmpDir, "cursor");
-
-    const content = fs.readFileSync(
-      path.join(tmpDir, ".cursor", "rules", "wdd.mdc"),
-      "utf-8"
-    );
+    const content = fs.readFileSync(filePath, "utf-8");
     assert.ok(content.includes("alwaysApply: true"), "Should have alwaysApply");
-    assert.ok(content.includes("globs:"), "Should have globs");
   });
 
   // Test 5: content includes project name from config
@@ -94,20 +101,23 @@ describe("Ward 012: Bootstrap Command", () => {
     await bootstrapAdapter(tmpDir, "claude");
 
     const content = fs.readFileSync(
-      path.join(tmpDir, ".claude", "skills", "wdd.md"),
+      path.join(tmpDir, ".claude", "skills", "wdd", "SKILL.md"),
       "utf-8"
     );
     assert.ok(content.includes("test-project"), "Should include project name");
   });
 
-  // Test 6: creates directories if missing
-  it("bootstrap_creates_directories", async () => {
-    // .claude/ doesn't exist yet
-    assert.ok(!fs.existsSync(path.join(tmpDir, ".claude")));
+  // Test 6: removes old flat file format
+  it("bootstrap_removes_old_format", async () => {
+    // Create old format file
+    const oldDir = path.join(tmpDir, ".claude", "skills");
+    fs.mkdirSync(oldDir, { recursive: true });
+    fs.writeFileSync(path.join(oldDir, "wdd.md"), "old content");
 
     await bootstrapAdapter(tmpDir, "claude");
 
-    assert.ok(fs.existsSync(path.join(tmpDir, ".claude", "skills")));
+    assert.ok(!fs.existsSync(path.join(oldDir, "wdd.md")), "Old wdd.md should be removed");
+    assert.ok(fs.existsSync(path.join(oldDir, "wdd", "SKILL.md")), "New format should exist");
   });
 
   // Test 7: errors on unknown adapter
@@ -115,10 +125,7 @@ describe("Ward 012: Bootstrap Command", () => {
     await assert.rejects(
       () => bootstrapAdapter(tmpDir, "vscode"),
       (err: Error) => {
-        assert.ok(
-          err.message.includes("Unknown adapter"),
-          `Should mention unknown adapter: ${err.message}`
-        );
+        assert.ok(err.message.includes("Unknown adapter"));
         return true;
       }
     );
@@ -129,6 +136,6 @@ describe("Ward 012: Bootstrap Command", () => {
     await run(["init", "--name", "cli-test"], tmpDir);
     const { code } = await run(["bootstrap", "claude"], tmpDir);
     assert.equal(code, 0);
-    assert.ok(fs.existsSync(path.join(tmpDir, ".claude", "skills", "wdd.md")));
+    assert.ok(fs.existsSync(path.join(tmpDir, ".claude", "skills", "wdd", "SKILL.md")));
   });
 });

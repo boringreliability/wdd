@@ -1,17 +1,6 @@
-export function getSkillContent(projectName: string): string {
-  return `# Ward-Driven Development — ${projectName}
-
-You are working on **${projectName}**, a project managed with Ward-Driven Development (WDD).
+export function getSharedContent(projectName: string): string {
+  return `You are working on **${projectName}**, a project managed with Ward-Driven Development (WDD).
 All project state lives in the \`.wdd/\` directory as markdown files with YAML frontmatter.
-
-## Session Start (MANDATORY)
-
-Before ANY work, run:
-\`\`\`
-wdd session
-\`\`\`
-This outputs PROJECT.md + CONTEXT.md + PROGRESS.md + the current Ward spec.
-Read it. Understand what's been done and what comes next.
 
 ## Ward Lifecycle — Checkpoint Discipline
 
@@ -49,6 +38,7 @@ gold → complete (via wdd complete)
 | \`wdd ward reopen <id> --reason "text"\` | Reopen a completed Ward |
 | \`wdd epic create "Name" --slug <slug>\` | Create a new Epic |
 | \`wdd search <query> [--tag <tag>]\` | Search project memory |
+| \`wdd bootstrap claude\\|cursor\` | Install AI adapter |
 | \`wdd init --name "project"\` | Initialize WDD in a new project |
 
 ## After Completing a Ward
@@ -68,17 +58,25 @@ gold → complete (via wdd complete)
 `;
 }
 
-export function getClaudeSkill(projectName: string): string {
-  return `---
+export interface ClaudeSkillFile {
+  dir: string;
+  content: string;
+}
+
+export function getClaudeSkills(projectName: string): ClaudeSkillFile[] {
+  return [
+    {
+      dir: "wdd",
+      content: `---
 name: wdd
-description: Ward-Driven Development workflow for ${projectName}. Run this at session start and follow checkpoint discipline.
+description: "Ward-Driven Development: get project context and orient yourself. Use at session start or when you need to understand project state."
 ---
 
-${getSkillContent(projectName)}
-## User-Invocable Skills
+# WDD — Session Context
 
-### /wdd
-Get project context and orient yourself.
+${getSharedContent(projectName)}
+
+## What To Do
 
 1. Run \`wdd session\` and read the full output carefully
 2. Run \`wdd validate\` to check project health
@@ -87,47 +85,60 @@ Get project context and orient yourself.
    - Which Ward is active and its status
    - Any blockers or warnings from validate
 4. Ask the user what they want to work on
+`,
+    },
+    {
+      dir: "ward",
+      content: `---
+name: ward
+description: "Continue working on the current WDD Ward. Checks ward status and follows checkpoint discipline with mandatory human approval gates."
+---
 
-### /ward
-Continue working on the current Ward. Behavior depends on ward status.
+# /ward — Continue Current Ward
 
-1. Run \`wdd session\` to find the current ward and its status
-2. Based on the ward's status:
+Run \`wdd session\` to find the current ward and its status, then follow the appropriate flow:
 
-   **planned** — Start Red phase:
-   - Run \`wdd ward status <id> red\`
-   - Write tests per the ward spec's Tests table
-   - Present tests to user
-   - ⏸️ STOP — Wait for explicit approval. Do NOT proceed.
+## planned — Start Red phase
+1. Run \`wdd ward status <id> red\`
+2. Write tests per the ward spec's Tests table
+3. Present tests to user
+4. ⏸️ **STOP — Wait for explicit approval. Do NOT proceed.**
 
-   **red** — Tests written, awaiting approval:
-   - Present the tests if not yet shown
-   - ⏸️ STOP — Wait for explicit approval. Do NOT proceed.
+## red — Tests written, awaiting approval
+1. Present the tests if not yet shown
+2. ⏸️ **STOP — Wait for explicit approval. Do NOT proceed.**
 
-   **approved** — Start Gold phase:
-   - Run \`wdd ward status <id> gold\`
-   - Implement until all tests pass
-   - Present implementation to user
-   - ⏸️ STOP — Wait for explicit approval. Do NOT proceed.
+## approved — Start Gold phase
+1. Run \`wdd ward status <id> gold\`
+2. Implement until all tests pass
+3. Present implementation to user
+4. ⏸️ **STOP — Wait for explicit approval. Do NOT proceed.**
 
-   **gold** — Implementation done, awaiting approval:
-   - Run the tests. If failing, fix implementation (not tests).
-   - Present results to user
-   - ⏸️ STOP — Wait for explicit approval. Do NOT proceed.
-   - When approved: run \`wdd complete <id>\` and follow its output
+## gold — Implementation done, awaiting approval
+1. Run the tests. If failing, fix implementation (not tests).
+2. Present results to user
+3. ⏸️ **STOP — Wait for explicit approval. Do NOT proceed.**
+4. When approved: run \`wdd complete <id>\` and follow its output
 
-   **complete** — Ward is done:
-   - Tell user this ward is complete
-   - Suggest \`/ward-new\` to create the next ward
+## complete — Ward is done
+- Tell user this ward is complete
+- Suggest creating the next ward with /ward-new
 
-   **blocked** — Ward is blocked:
-   - Show what the ward depends on
-   - Suggest resolving the blocker
+## blocked — Ward is blocked
+- Show what the ward depends on
+- Suggest resolving the blocker
 
-3. NEVER skip a checkpoint. NEVER proceed without the user saying "approved" or "godkendt".
+**NEVER skip a checkpoint. NEVER proceed without the user saying "approved" or "godkendt".**
+`,
+    },
+    {
+      dir: "ward-new",
+      content: `---
+name: ward-new
+description: "Create a new WDD Ward with full spec, tests table, must-not/must-do lists, and test file. Use when starting new work."
+---
 
-### /ward-new
-Create a new Ward with full spec and tests.
+# /ward-new — Create a New Ward
 
 1. Ask the user for:
    - Ward name (what it builds)
@@ -146,8 +157,10 @@ Create a new Ward with full spec and tests.
 4. Run \`wdd ward status <id> red\`
 5. Write the test file based on the Tests table
 6. Present tests to user
-7. ⏸️ STOP — Wait for explicit approval before implementing
-`;
+7. ⏸️ **STOP — Wait for explicit approval before implementing**
+`,
+    },
+  ];
 }
 
 export function getCursorRule(projectName: string): string {
@@ -157,5 +170,7 @@ globs: "**/*"
 alwaysApply: true
 ---
 
-${getSkillContent(projectName)}`;
+# Ward-Driven Development — ${projectName}
+
+${getSharedContent(projectName)}`;
 }

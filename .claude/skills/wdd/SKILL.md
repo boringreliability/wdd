@@ -1,21 +1,12 @@
 ---
 name: wdd
-description: Ward-Driven Development workflow for wdd. Run this at session start and follow checkpoint discipline.
+description: "Ward-Driven Development: get project context and orient yourself. Use at session start or when you need to understand project state."
 ---
 
-# Ward-Driven Development — wdd
+# WDD — Session Context
 
 You are working on **wdd**, a project managed with Ward-Driven Development (WDD).
 All project state lives in the `.wdd/` directory as markdown files with YAML frontmatter.
-
-## Session Start (MANDATORY)
-
-Before ANY work, run:
-```
-wdd session
-```
-This outputs PROJECT.md + CONTEXT.md + PROGRESS.md + the current Ward spec.
-Read it. Understand what's been done and what comes next.
 
 ## Ward Lifecycle — Checkpoint Discipline
 
@@ -53,6 +44,7 @@ gold → complete (via wdd complete)
 | `wdd ward reopen <id> --reason "text"` | Reopen a completed Ward |
 | `wdd epic create "Name" --slug <slug>` | Create a new Epic |
 | `wdd search <query> [--tag <tag>]` | Search project memory |
+| `wdd bootstrap claude\|cursor` | Install AI adapter |
 | `wdd init --name "project"` | Initialize WDD in a new project |
 
 ## After Completing a Ward
@@ -70,10 +62,8 @@ gold → complete (via wdd complete)
 - `.wdd/PROGRESS.md` — Auto-generated, never hand-edit
 - `.wdd/memory/` — Decisions, learnings, snapshots
 
-## User-Invocable Skills
 
-### /wdd
-Get project context and orient yourself.
+## What To Do
 
 1. Run `wdd session` and read the full output carefully
 2. Run `wdd validate` to check project health
@@ -82,63 +72,3 @@ Get project context and orient yourself.
    - Which Ward is active and its status
    - Any blockers or warnings from validate
 4. Ask the user what they want to work on
-
-### /ward
-Continue working on the current Ward. Behavior depends on ward status.
-
-1. Run `wdd session` to find the current ward and its status
-2. Based on the ward's status:
-
-   **planned** — Start Red phase:
-   - Run `wdd ward status <id> red`
-   - Write tests per the ward spec's Tests table
-   - Present tests to user
-   - ⏸️ STOP — Wait for explicit approval. Do NOT proceed.
-
-   **red** — Tests written, awaiting approval:
-   - Present the tests if not yet shown
-   - ⏸️ STOP — Wait for explicit approval. Do NOT proceed.
-
-   **approved** — Start Gold phase:
-   - Run `wdd ward status <id> gold`
-   - Implement until all tests pass
-   - Present implementation to user
-   - ⏸️ STOP — Wait for explicit approval. Do NOT proceed.
-
-   **gold** — Implementation done, awaiting approval:
-   - Run the tests. If failing, fix implementation (not tests).
-   - Present results to user
-   - ⏸️ STOP — Wait for explicit approval. Do NOT proceed.
-   - When approved: run `wdd complete <id>` and follow its output
-
-   **complete** — Ward is done:
-   - Tell user this ward is complete
-   - Suggest `/ward-new` to create the next ward
-
-   **blocked** — Ward is blocked:
-   - Show what the ward depends on
-   - Suggest resolving the blocker
-
-3. NEVER skip a checkpoint. NEVER proceed without the user saying "approved" or "godkendt".
-
-### /ward-new
-Create a new Ward with full spec and tests.
-
-1. Ask the user for:
-   - Ward name (what it builds)
-   - Epic (suggest existing epics from `.wdd/epics/`)
-   - Estimated test count
-2. Run `wdd ward create "Name" --epic <slug> --tests <N>`
-3. Open the created ward file and write the full spec:
-   - Scope (one paragraph)
-   - Inputs (what it uses from previous wards)
-   - Outputs (what it produces)
-   - Specification (detailed technical spec)
-   - Tests table (# | test_name | what it verifies)
-   - Must NOT list (explicit constraints)
-   - Must DO list (explicit requirements)
-   - Verification (how to prove it's done)
-4. Run `wdd ward status <id> red`
-5. Write the test file based on the Tests table
-6. Present tests to user
-7. ⏸️ STOP — Wait for explicit approval before implementing

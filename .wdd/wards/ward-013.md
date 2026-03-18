@@ -103,3 +103,7 @@ The commands are embedded in the skill markdown as sections that Claude Code rec
 - Existing Ward 11 tests still pass
 - `wdd bootstrap claude` generates skill with all three commands
 - TypeScript compiles with zero errors
+
+## Reopened — 2026-03-18
+Reason: Claude Code skills require directory format (skill-name/SKILL.md), not flat files (skill-name.md). Three separate skills needed for /wdd, /ward, /ward-new.
+Fix Ward: ward-013b.md
