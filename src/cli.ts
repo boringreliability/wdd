@@ -10,6 +10,7 @@ import { validateProject } from "./commands/validate.js";
 import { printStatus, runProgress } from "./commands/status-progress.js";
 import { searchMemory } from "./commands/search.js";
 import { createEpic } from "./commands/epic-create.js";
+import { bootstrapAdapter } from "./commands/bootstrap.js";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -152,6 +153,14 @@ async function main(): Promise<void> {
           console.error('Run "wdd --help" for usage.');
           process.exit(1);
       }
+      break;
+    }
+    case "bootstrap": {
+      const adapter = args[1];
+      if (!adapter) {
+        throw new Error("Usage: wdd bootstrap <claude|cursor>");
+      }
+      await bootstrapAdapter(process.cwd(), adapter);
       break;
     }
     case "session": {
