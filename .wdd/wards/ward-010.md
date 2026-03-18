@@ -3,12 +3,12 @@ ward: 10
 revision: null
 name: "Epic Create Command"
 epic: core-cli
-status: red
+status: complete
 dependencies: [1]
 layer: typescript
 estimated_tests: 7
 created: 2026-03-17
-completed: null
+completed: 2026-03-18
 ---
 # Ward 010: Epic Create Command
 
