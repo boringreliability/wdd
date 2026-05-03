@@ -1,50 +1,50 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { getClaudeSkill, getCursorRule } from "./templates/adapter-content.js";
+import { getClaudeSkills } from "./templates/adapter-content.js";
 
 describe("Ward 013: Skill Commands", () => {
-  const skill = getClaudeSkill("test-project");
+  const skills = getClaudeSkills("test-project");
 
-  // Test 1: /wdd command exists
+  function findSkill(dir: string) {
+    const skill = skills.find((s) => s.dir === dir);
+    assert.ok(skill, `Expected skill with dir "${dir}" to exist`);
+    return skill!;
+  }
+
+  // Test 1: /wdd skill exists
   it("skill_has_wdd_command", () => {
-    assert.ok(
-      skill.includes("### /wdd"),
-      "Claude skill should have /wdd command section"
-    );
+    const wdd = findSkill("wdd");
+    assert.ok(wdd.content.length > 0, "/wdd skill should have content");
   });
 
-  // Test 2: /ward command exists
+  // Test 2: /ward skill exists
   it("skill_has_ward_command", () => {
-    assert.ok(
-      skill.includes("### /ward\n") || skill.includes("### /ward "),
-      "Claude skill should have /ward command section"
-    );
+    const ward = findSkill("ward");
+    assert.ok(ward.content.length > 0, "/ward skill should have content");
   });
 
-  // Test 3: /ward-new command exists
+  // Test 3: /ward-new skill exists
   it("skill_has_ward_new_command", () => {
-    assert.ok(
-      skill.includes("### /ward-new"),
-      "Claude skill should have /ward-new command section"
-    );
+    const wardNew = findSkill("ward-new");
+    assert.ok(wardNew.content.length > 0, "/ward-new skill should have content");
   });
 
   // Test 4: /wdd mentions wdd session
   it("wdd_command_runs_session", () => {
-    const wddSection = extractSection(skill, "/wdd");
+    const wdd = findSkill("wdd");
     assert.ok(
-      wddSection.includes("wdd session"),
-      `/wdd should mention wdd session`
+      wdd.content.includes("wdd session"),
+      "/wdd skill should mention wdd session"
     );
   });
 
   // Test 5: /ward covers all statuses
   it("ward_command_has_states", () => {
-    const wardSection = extractSection(skill, "/ward");
+    const ward = findSkill("ward");
     const states = ["planned", "red", "approved", "gold", "complete"];
     for (const state of states) {
       assert.ok(
-        wardSection.includes(state),
+        ward.content.includes(state),
         `/ward should mention ${state} status`
       );
     }
@@ -52,54 +52,40 @@ describe("Ward 013: Skill Commands", () => {
 
   // Test 6: /ward has STOP checkpoints
   it("ward_command_has_checkpoints", () => {
-    const wardSection = extractSection(skill, "/ward");
+    const ward = findSkill("ward");
     assert.ok(
-      wardSection.includes("STOP"),
-      `/ward should have STOP checkpoints`
+      ward.content.includes("STOP"),
+      "/ward should have STOP checkpoints"
     );
     assert.ok(
-      wardSection.includes("approval") || wardSection.includes("approved"),
-      `/ward should mention waiting for approval`
+      ward.content.includes("approval") || ward.content.includes("approved"),
+      "/ward should mention waiting for approval"
     );
   });
 
   // Test 7: /ward-new asks for name and epic
   it("ward_new_asks_name", () => {
-    const newSection = extractSection(skill, "/ward-new");
+    const wardNew = findSkill("ward-new");
     assert.ok(
-      newSection.includes("name"),
-      `/ward-new should ask for ward name`
+      wardNew.content.toLowerCase().includes("name"),
+      "/ward-new should ask for ward name"
     );
     assert.ok(
-      newSection.includes("epic"),
-      `/ward-new should ask for epic`
+      wardNew.content.toLowerCase().includes("epic"),
+      "/ward-new should ask for epic"
     );
   });
 
   // Test 8: /ward-new includes writing tests and stopping
   it("ward_new_writes_tests", () => {
-    const newSection = extractSection(skill, "/ward-new");
+    const wardNew = findSkill("ward-new");
     assert.ok(
-      newSection.includes("test"),
-      `/ward-new should mention writing tests`
+      wardNew.content.toLowerCase().includes("test"),
+      "/ward-new should mention writing tests"
     );
     assert.ok(
-      newSection.includes("STOP"),
-      `/ward-new should have STOP checkpoint`
+      wardNew.content.includes("STOP"),
+      "/ward-new should have STOP checkpoint"
     );
   });
 });
-
-/**
- * Extract content between a ### heading and the next ### heading.
- */
-function extractSection(content: string, heading: string): string {
-  const pattern = `### ${heading}`;
-  const startIdx = content.indexOf(pattern);
-  if (startIdx === -1) return "";
-
-  const afterHeading = content.slice(startIdx + pattern.length);
-  const nextHeading = afterHeading.indexOf("\n### ");
-  if (nextHeading === -1) return afterHeading;
-  return afterHeading.slice(0, nextHeading);
-}

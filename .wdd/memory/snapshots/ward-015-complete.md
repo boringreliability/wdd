@@ -1,13 +1,13 @@
 # Context — WDD CLI
 
 ## Last Updated
-Ward 15b complete — 2026-05-03
+Ward 14 complete — 2026-05-03
 
 ## Current State
-All 18 Wards complete (1-15 + 5b + 13b + 15b). 134 tests passing.
-CLI introduces Manual Smoke Test Protocol (Ward 15) with code-fence-aware extraction (15b).
-Simplify pass extracted shared utilities: `src/utils/{status,ward-id,config,section}.ts` and `src/templates/ward-body.ts`.
+All 16 Wards complete (1-14 + 5b + 13b). 122 tests passing.
+CLI is fully functional with 13 commands including `wdd eval` for skill evals.
 Installed via `npm link` globally. Dogfooding — WDD CLI manages its own development.
+Pre-existing test regressions in Ward 11/13 (from 13b refactor) fixed as part of Ward 14 cleanup.
 
 ## Architecture Decisions Made
 | Decision | Rationale | Ward |
@@ -21,9 +21,6 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 | Reopened wards as separate files | ward-001b.md preserves original integrity, creates audit trail | 4 |
 | Adapter content as shared template | Claude skill and Cursor rule share same instruction text | 11 |
 | Single source of truth for skills | `getClaudeSkills()` owns dir + content + evals; bootstrap iterates once | 14 |
-| Manual Smoke Test as third forcing function | Automated tests prove functions; integration tests prove wiring; smoke tests prove humans can use it | 15 |
-| Code-fence-aware section extraction | `## ` headings inside ``` are content, not structure — required for ward bodies that contain markdown examples | 15b |
-| Shared utilities in `src/utils/` | `status`, `ward-id`, `config`, `section` — single source of truth for cross-cutting concerns; reduces drift | simplify |
 
 ## Active Constraints
 - Zero runtime dependencies beyond Node built-ins
@@ -35,15 +32,13 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 ## Key Metrics
 | Metric | Value | Ward |
 |--------|-------|------|
-| Commands implemented | 13 | 15 |
-| Tests | 134 actual | 15b |
-| Wards complete | 18/18 | 15b |
-
-## Known Issues
-- CLI's `wdd ward status <id>` and `wdd complete <id>` use `parseInt()` on the id, stripping revision suffixes (e.g. "15b" → 15). Underlying `updateWardStatus()` already accepts strings via `parseWardId()`. Fix is one-line in [cli.ts](src/cli.ts) but needs `completeWard()` to also accept `number | string`. Candidate for Ward 16.
+| Commands implemented | 13 | 14 |
+| Tests | 122 actual | 14 |
+| Wards complete | 16/16 | 14 |
 
 ## What Comes Next
-- Ward 16: Export Inventory + Integration Test Requirement + CLI revision-aware ID parsing — forebygger reinvention, fanger wiring-huller, fixer kendt CLI bug
+- Ward 15: Manual Smoke Test Protocol — structural requirement that AI must spin up solution and guide manual testing before Gold approval
+- Ward 16: Export Inventory + Integration Test Requirement — forebygger reinvention og fanger wiring-huller
 - Ward 17: Upgrade/Migration Command — `wdd upgrade` for at migrere ældre `.wdd/` strukturer mellem schema-versioner
 - Publish to npm as `wdd` package
 - Real-world validation in other projects (kmd-regelsim)

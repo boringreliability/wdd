@@ -41,6 +41,19 @@ gold → complete (via wdd complete)
 | \`wdd bootstrap claude\\|cursor\` | Install AI adapter |
 | \`wdd init --name "project"\` | Initialize WDD in a new project |
 
+## Manual Smoke Test Protocol (MANDATORY before Gold approval)
+
+Automated tests prove functions work in isolation. Manual smoke tests prove a human
+can use the result. Before requesting Gold-phase approval from the human, you MUST:
+
+1. Read the \`## Manual Smoke Test\` section from the active ward file
+2. Spin up the solution as the **Setup** subsection describes (build, npm link, dev server, etc.)
+3. Provide the exact **Steps** as copy-pasteable commands to the human
+4. Wait for the human to run them and report results
+5. Only after they confirm the smoke test passed may you ask for Gold approval
+
+Do not claim Gold complete based on automated tests alone. The human must have *used* the thing.
+
 ## After Completing a Ward
 
 1. Run \`wdd complete <id>\` — it will snapshot CONTEXT.md and regenerate PROGRESS.md
@@ -58,9 +71,17 @@ gold → complete (via wdd complete)
 `;
 }
 
+import {
+  type SkillEvalsJson,
+  getWddEvals,
+  getWardEvals,
+  getWardNewEvals,
+} from "./skill-evals.js";
+
 export interface ClaudeSkillFile {
   dir: string;
   content: string;
+  evals?: SkillEvalsJson;
 }
 
 export function getClaudeSkills(projectName: string): ClaudeSkillFile[] {
@@ -86,6 +107,7 @@ ${getSharedContent(projectName)}
    - Any blockers or warnings from validate
 4. Ask the user what they want to work on
 `,
+      evals: getWddEvals(),
     },
     {
       dir: "ward",
@@ -111,14 +133,20 @@ Run \`wdd session\` to find the current ward and its status, then follow the app
 ## approved — Start Gold phase
 1. Run \`wdd ward status <id> gold\`
 2. Implement until all tests pass
-3. Present implementation to user
-4. ⏸️ **STOP — Wait for explicit approval. Do NOT proceed.**
+3. Read the \`## Manual Smoke Test\` section from the ward file
+4. **Spin up the solution** (build, npm link, dev server, etc.) per the Setup subsection
+5. **Provide the exact Steps as copy-pasteable commands to the user** and wait for them to run
+6. Present implementation results AND smoke test outcome to user
+7. ⏸️ **STOP — Wait for explicit approval of BOTH automated tests AND smoke test. Do NOT proceed.**
 
 ## gold — Implementation done, awaiting approval
 1. Run the tests. If failing, fix implementation (not tests).
-2. Present results to user
-3. ⏸️ **STOP — Wait for explicit approval. Do NOT proceed.**
-4. When approved: run \`wdd complete <id>\` and follow its output
+2. Run the Manual Smoke Test from the ward file if not already done in approved-phase
+3. Present results to user — automated tests + smoke test outcome
+4. ⏸️ **STOP — Wait for explicit approval. Do NOT proceed.**
+5. When approved: run \`wdd complete <id>\` and follow its output
+
+**The Manual Smoke Test is mandatory before Gold approval. Automated tests prove functions work — the smoke test proves the human can use the result.**
 
 ## complete — Ward is done
 - Tell user this ward is complete
@@ -130,6 +158,7 @@ Run \`wdd session\` to find the current ward and its status, then follow the app
 
 **NEVER skip a checkpoint. NEVER proceed without the user saying "approved" or "godkendt".**
 `,
+      evals: getWardEvals(),
     },
     {
       dir: "ward-new",
@@ -153,12 +182,19 @@ description: "Create a new WDD Ward with full spec, tests table, must-not/must-d
    - Tests table (# | test_name | what it verifies)
    - Must NOT list (explicit constraints)
    - Must DO list (explicit requirements)
+   - **Manual Smoke Test section (MANDATORY)** — fill in:
+     - Setup: exact commands to spin up (build, npm link, dev server, etc.)
+     - Steps: numbered copy-pasteable commands with expected outputs
+     - Pass criteria: concrete observable checkboxes
    - Verification (how to prove it's done)
 4. Run \`wdd ward status <id> red\`
 5. Write the test file based on the Tests table
 6. Present tests to user
 7. ⏸️ **STOP — Wait for explicit approval before implementing**
+
+**The Manual Smoke Test section is not optional.** Every Ward must define how a human can manually verify the result before Gold approval. Placeholder bullets are not enough — write real, copy-pasteable commands.
 `,
+      evals: getWardNewEvals(),
     },
   ];
 }

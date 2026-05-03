@@ -1,5 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
+import { todayIso } from "../utils/config.js";
+import { WARD_BODY_TEMPLATE } from "../templates/ward-body.js";
 
 export interface InitOptions {
   name: string;
@@ -40,7 +42,7 @@ export async function initProject(
     fs.mkdirSync(path.join(wddDir, dir), { recursive: true });
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayIso();
   const { name } = options;
 
   // PROJECT.md
@@ -196,7 +198,7 @@ _None_
   console.log(`  └── adapters/`);
 }
 
-const WARD_TEMPLATE = `---
+const WARD_TEMPLATE_FRONTMATTER = `---
 ward: 0
 revision: null
 name: ""
@@ -208,35 +210,9 @@ estimated_tests: 0
 created: ""
 completed: null
 ---
-# Ward {NNN}: {Name}
-
-## Scope
-{One paragraph: what this Ward builds and why}
-
-## Inputs
-{What this Ward reads/uses from previous Wards}
-
-## Outputs
-{What this Ward produces for future Wards}
-
-## Specification
-{Detailed technical spec}
-
-## Tests
-
-| # | Test Name | Verifies |
-|---|-----------|----------|
-| 1 | {test_name} | {what it proves} |
-
-## Must NOT
-- {Explicit constraint}
-
-## Must DO
-- {Explicit requirement}
-
-## Verification
-{How to prove this Ward is complete}
 `;
+
+const WARD_TEMPLATE = WARD_TEMPLATE_FRONTMATTER + WARD_BODY_TEMPLATE;
 
 const EPIC_TEMPLATE = `# Epic {NN}: {Name}
 

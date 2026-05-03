@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { getClaudeSkills, getCursorRule } from "../templates/adapter-content.js";
+import { readProjectName } from "../utils/config.js";
 
 export async function bootstrapAdapter(
   projectDir: string,
@@ -34,13 +35,23 @@ function bootstrapClaude(projectDir: string, projectName: string): string[] {
   for (const skill of skills) {
     const dir = path.join(skillsDir, skill.dir);
     fs.mkdirSync(dir, { recursive: true });
+
     const filePath = path.join(dir, "SKILL.md");
     fs.writeFileSync(filePath, skill.content);
     created.push(`${skill.dir}/SKILL.md`);
     console.log(`  /${skill.dir} → .claude/skills/${skill.dir}/SKILL.md`);
+
+    if (skill.evals) {
+      const evalsDir = path.join(dir, "evals");
+      fs.mkdirSync(evalsDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(evalsDir, "evals.json"),
+        JSON.stringify(skill.evals, null, 2)
+      );
+    }
   }
 
-  console.log(`\nInstalled ${created.length} WDD skills for Claude Code.`);
+  console.log(`\nInstalled ${created.length} WDD skills with evals for Claude Code.`);
   return created;
 }
 
@@ -55,11 +66,3 @@ function bootstrapCursor(projectDir: string, projectName: string): string[] {
   return [filePath];
 }
 
-function readProjectName(projectDir: string): string {
-  const configPath = path.join(projectDir, ".wdd", "config.json");
-  if (fs.existsSync(configPath)) {
-    const raw = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-    return raw.project ?? "my-project";
-  }
-  return "my-project";
-}

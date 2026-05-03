@@ -11,6 +11,7 @@ import { printStatus, runProgress } from "./commands/status-progress.js";
 import { searchMemory } from "./commands/search.js";
 import { createEpic } from "./commands/epic-create.js";
 import { bootstrapAdapter } from "./commands/bootstrap.js";
+import { validateEvals } from "./commands/eval.js";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -25,15 +26,26 @@ function hasFlag(name: string): boolean {
   return args.includes(`--${name}`);
 }
 
-/** Get positional args (non-flag values) after a given index. */
+/**
+ * Collect non-flag arguments starting at `startIndex`.
+ *
+ * A `--flag` is treated as taking the following token as its value only when
+ * that token is itself not another flag (i.e., does not start with `--`).
+ * Boolean flags like `--force` therefore don't accidentally swallow the next
+ * positional argument.
+ */
 function getPositional(startIndex: number): string[] {
   const result: string[] = [];
   for (let i = startIndex; i < args.length; i++) {
-    if (args[i].startsWith("--")) {
-      i++; // skip flag value
+    const arg = args[i];
+    if (arg.startsWith("--")) {
+      const next = args[i + 1];
+      if (next !== undefined && !next.startsWith("--")) {
+        i++;
+      }
       continue;
     }
-    result.push(args[i]);
+    result.push(arg);
   }
   return result;
 }
@@ -163,6 +175,17 @@ async function main(): Promise<void> {
         throw new Error("Usage: wdd bootstrap <claude|cursor>");
       }
       await bootstrapAdapter(process.cwd(), adapter);
+      break;
+    }
+    case "eval": {
+      const result = validateEvals(process.cwd());
+      for (const err of result.errors) console.error(`  ERROR: ${err}`);
+      if (result.valid) {
+        console.log(`Evals valid: ${result.skills.length} skill(s) checked.`);
+      } else {
+        console.error(`Eval validation failed: ${result.errors.length} error(s).`);
+        process.exit(1);
+      }
       break;
     }
     case "session": {

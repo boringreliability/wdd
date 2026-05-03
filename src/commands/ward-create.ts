@@ -1,6 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { serializeFrontmatter } from "../frontmatter.js";
+import { formatWardId, wardFilename } from "../utils/ward-id.js";
+import { todayIso } from "../utils/config.js";
+import { WARD_BODY_TEMPLATE } from "../templates/ward-body.js";
 
 export interface CreateWardOptions {
   name: string;
@@ -22,8 +25,7 @@ export async function createWard(
 
   const wardsDir = path.join(projectDir, ".wdd", "wards");
   const nextNumber = getNextWardNumber(wardsDir);
-  const padded = String(nextNumber).padStart(3, "0");
-  const today = new Date().toISOString().slice(0, 10);
+  const padded = formatWardId(nextNumber);
 
   const frontmatter: Record<string, unknown> = {
     ward: nextNumber,
@@ -34,42 +36,14 @@ export async function createWard(
     dependencies: [],
     layer: options.layer ?? "typescript",
     estimated_tests: options.tests ?? 0,
-    created: today,
+    created: todayIso(),
     completed: null,
   };
 
-  const body = `# Ward ${padded}: ${options.name}
-
-## Scope
-{One paragraph: what this Ward builds and why}
-
-## Inputs
-{What this Ward reads/uses from previous Wards}
-
-## Outputs
-{What this Ward produces for future Wards}
-
-## Specification
-{Detailed technical spec}
-
-## Tests
-
-| # | Test Name | Verifies |
-|---|-----------|----------|
-| 1 | {test_name} | {what it proves} |
-
-## Must NOT
-- {Explicit constraint}
-
-## Must DO
-- {Explicit requirement}
-
-## Verification
-{How to prove this Ward is complete}
-`;
+  const body = WARD_BODY_TEMPLATE.replace("{NNN}", padded).replace("{Name}", options.name);
 
   const content = serializeFrontmatter(frontmatter, body);
-  const filename = `ward-${padded}.md`;
+  const filename = wardFilename(nextNumber);
   const filePath = path.join(wardsDir, filename);
 
   fs.writeFileSync(filePath, content);
@@ -81,11 +55,11 @@ export async function createWard(
 function getNextWardNumber(wardsDir: string): number {
   if (!fs.existsSync(wardsDir)) return 1;
 
+  // Match ward-NNN.md but NOT ward-NNNb.md (reopened wards)
   const files = fs.readdirSync(wardsDir);
   let maxNumber = 0;
 
   for (const file of files) {
-    // Match ward-NNN.md but NOT ward-NNNb.md (reopened wards)
     const match = file.match(/^ward-(\d+)\.md$/);
     if (match) {
       const num = parseInt(match[1], 10);

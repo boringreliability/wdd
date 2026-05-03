@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { serializeFrontmatter } from "../frontmatter.js";
+import { todayIso } from "../utils/config.js";
 
 export interface CreateEpicOptions {
   name: string;
@@ -21,7 +22,7 @@ export async function createEpic(
   const epicsDir = path.join(projectDir, ".wdd", "epics");
   const nextNumber = getNextEpicNumber(epicsDir);
   const padded = String(nextNumber).padStart(2, "0");
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayIso();
 
   const frontmatter: Record<string, unknown> = {
     epic: options.slug,

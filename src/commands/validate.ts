@@ -1,8 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseFrontmatter } from "../frontmatter.js";
-
-const VALID_STATUSES = ["planned", "red", "approved", "gold", "complete", "blocked"];
+import { isStatus } from "../utils/status.js";
 
 const REQUIRED_FILES = ["PROJECT.md", "CONTEXT.md", "PROGRESS.md", "config.json"];
 const REQUIRED_DIRS = ["wards", "epics", "reviews", "memory", "templates"];
@@ -75,40 +74,34 @@ export function validateProject(projectDir: string): ValidationResult {
     const wardFiles = fs.readdirSync(wardsDir).filter((f) => f.endsWith(".md"));
     const existingWards = new Set<string>();
 
-    // First pass: collect all ward IDs
+    // First pass: collect all ward IDs (so dependency checks can find them)
     for (const file of wardFiles) {
       const content = fs.readFileSync(path.join(wardsDir, file), "utf-8");
       const { frontmatter } = parseFrontmatter(content);
-      const ward = frontmatter.ward as number;
-      const revision = frontmatter.revision as string | null;
-      const id = revision ? `${ward}${revision}` : String(ward);
-      existingWards.add(id);
+      const num = frontmatter.ward as number;
+      const revision = (frontmatter.revision as string | null) ?? null;
+      existingWards.add(revision ? `${num}${revision}` : String(num));
     }
 
-    // Second pass: validate each ward
     for (const file of wardFiles) {
       const content = fs.readFileSync(path.join(wardsDir, file), "utf-8");
       const { frontmatter } = parseFrontmatter(content);
 
-      // Required keys
       for (const key of REQUIRED_FRONTMATTER_KEYS) {
         if (!(key in frontmatter)) {
           errors.push(`${file}: missing required frontmatter key '${key}'`);
         }
       }
 
-      // Valid status
-      const status = frontmatter.status as string;
-      if (status && !VALID_STATUSES.includes(status)) {
+      const status = frontmatter.status;
+      if (status !== undefined && status !== null && !isStatus(status)) {
         errors.push(`${file}: invalid status '${status}'`);
       }
 
-      // Dependencies exist
       const deps = frontmatter.dependencies as Array<number | string> | undefined;
       if (Array.isArray(deps)) {
         for (const dep of deps) {
-          const depId = String(dep);
-          if (!existingWards.has(depId)) {
+          if (!existingWards.has(String(dep))) {
             errors.push(`${file}: dependency ward ${dep} does not exist`);
           }
         }

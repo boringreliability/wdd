@@ -1,6 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseFrontmatter, serializeFrontmatter } from "../frontmatter.js";
+import { formatWardId, wardFilename } from "../utils/ward-id.js";
+import { todayIso } from "../utils/config.js";
 
 export async function reopenWard(
   projectDir: string,
@@ -8,15 +10,14 @@ export async function reopenWard(
   reason: string
 ): Promise<string> {
   const wardsDir = path.join(projectDir, ".wdd", "wards");
-  const padded = String(wardId).padStart(3, "0");
-  const originalPath = path.join(wardsDir, `ward-${padded}.md`);
+  const originalFilename = wardFilename(wardId);
+  const originalPath = path.join(wardsDir, originalFilename);
 
   if (!fs.existsSync(originalPath)) {
-    throw new Error(`Ward file not found: ward-${padded}.md`);
+    throw new Error(`Ward file not found: ${originalFilename}`);
   }
 
-  const originalContent = fs.readFileSync(originalPath, "utf-8");
-  const original = parseFrontmatter(originalContent);
+  const original = parseFrontmatter(fs.readFileSync(originalPath, "utf-8"));
 
   if (original.frontmatter.status !== "complete") {
     throw new Error(
@@ -24,14 +25,13 @@ export async function reopenWard(
     );
   }
 
-  // Determine next revision letter
-  const revision = getNextRevision(wardsDir, padded);
-  const today = new Date().toISOString().slice(0, 10);
+  const revision = getNextRevision(wardsDir, formatWardId(wardId));
+  const fixFilename = wardFilename(wardId, revision);
+  const today = todayIso();
 
-  // Append reopening note to original
   const updatedOriginalBody =
     original.body.trimEnd() +
-    `\n\n## Reopened — ${today}\nReason: ${reason}\nFix Ward: ward-${padded}${revision}.md\n`;
+    `\n\n## Reopened — ${today}\nReason: ${reason}\nFix Ward: ${fixFilename}\n`;
 
   fs.writeFileSync(
     originalPath,
@@ -41,7 +41,6 @@ export async function reopenWard(
     )
   );
 
-  // Create fix ward
   const fixFrontmatter: Record<string, unknown> = {
     ward: wardId,
     revision,
@@ -55,10 +54,10 @@ export async function reopenWard(
     completed: null,
   };
 
-  const fixBody = `# Ward ${padded}${revision}: ${original.frontmatter.name} (fix)
+  const fixBody = `# Ward ${formatWardId(wardId, revision)}: ${original.frontmatter.name} (fix)
 
 ## Reopened from
-Original: ward-${padded}.md
+Original: ${originalFilename}
 Reason: ${reason}
 
 ## Scope
@@ -80,10 +79,10 @@ Reason: ${reason}
 {How to prove this fix Ward is complete}
 `;
 
-  const fixPath = path.join(wardsDir, `ward-${padded}${revision}.md`);
+  const fixPath = path.join(wardsDir, fixFilename);
   fs.writeFileSync(fixPath, serializeFrontmatter(fixFrontmatter, fixBody));
 
-  console.log(`Reopened Ward ${wardId} → ward-${padded}${revision}.md`);
+  console.log(`Reopened Ward ${wardId} → ${fixFilename}`);
   console.log(`  Reason: ${reason}`);
 
   return fixPath;
@@ -94,8 +93,7 @@ function getNextRevision(wardsDir: string, padded: string): string {
   const letters = "bcdefghijklmnopqrstuvwxyz";
 
   for (const letter of letters) {
-    const candidate = `ward-${padded}${letter}.md`;
-    if (!files.includes(candidate)) {
+    if (!files.includes(`ward-${padded}${letter}.md`)) {
       return letter;
     }
   }

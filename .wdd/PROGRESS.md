@@ -1,26 +1,29 @@
 # Progress — wdd
 
 ## Summary
-15 of 15 Wards complete · 110 estimated tests · 0 blocked
+18 of 18 Wards complete · 126 estimated tests · 0 blocked
 
 ## Ward Status
 | Ward | Name | Tests | Status | Date |
 |------|------|-------|--------|------|
-| 1 | Project Scaffold + Init | 10 | ✅ Complete | 2026-03-14 |
-| 2 | Ward Creation | 8 | ✅ Complete | 2026-03-14 |
-| 3 | Ward Status Transitions | 10 | ✅ Complete | 2026-03-14 |
-| 4 | Ward Reopen | 7 | ✅ Complete | 2026-03-14 |
-| 5 | Ward Complete Flow | 8 | ✅ Complete | 2026-03-14 |
-| 5b | CLI Wiring (fix) | 8 | ✅ Complete | 2026-03-14 |
-| 6 | Session Command | 7 | ✅ Complete | 2026-03-14 |
-| 7 | Validate Command | 9 | ✅ Complete | 2026-03-15 |
-| 8 | Status, Progress & Search | 9 | ✅ Complete | 2026-03-16 |
-| 9 | Complete Output Enhancements | 5 | ✅ Complete | 2026-03-17 |
-| 10 | Epic Create Command | 7 | ✅ Complete | 2026-03-18 |
-| 11 | WDD Skill Content | 6 | ✅ Complete | 2026-03-18 |
-| 12 | Bootstrap Command | 8 | ✅ Complete | 2026-03-18 |
-| 13 | Skill Commands | 8 | ✅ Complete | 2026-03-18 |
-| 13b | Skill Commands (fix b) | 0 | ✅ Complete | 2026-03-18 |
+| 001 | Project Scaffold + Init | 10 | ✅ Complete | 2026-03-14 |
+| 002 | Ward Creation | 8 | ✅ Complete | 2026-03-14 |
+| 003 | Ward Status Transitions | 10 | ✅ Complete | 2026-03-14 |
+| 004 | Ward Reopen | 7 | ✅ Complete | 2026-03-14 |
+| 005 | Ward Complete Flow | 8 | ✅ Complete | 2026-03-14 |
+| 005b | CLI Wiring (fix) | 8 | ✅ Complete | 2026-03-14 |
+| 006 | Session Command | 7 | ✅ Complete | 2026-03-14 |
+| 007 | Validate Command | 9 | ✅ Complete | 2026-03-15 |
+| 008 | Status, Progress & Search | 9 | ✅ Complete | 2026-03-16 |
+| 009 | Complete Output Enhancements | 5 | ✅ Complete | 2026-03-17 |
+| 010 | Epic Create Command | 7 | ✅ Complete | 2026-03-18 |
+| 011 | WDD Skill Content | 6 | ✅ Complete | 2026-03-18 |
+| 012 | Bootstrap Command | 8 | ✅ Complete | 2026-03-18 |
+| 013 | Skill Commands | 8 | ✅ Complete | 2026-03-18 |
+| 013b | Skill Commands (fix b) | 0 | ✅ Complete | 2026-03-18 |
+| 014 | Skill Evals | 6 | ✅ Complete | 2026-05-03 |
+| 015 | Manual Smoke Test Protocol | 7 | ✅ Complete | 2026-05-03 |
+| 015b | Manual Smoke Test Protocol (fix b) | 3 | ✅ Complete | 2026-05-03 |
 
 ## Test Summary
-- Estimated total: 110
+- Estimated total: 126
