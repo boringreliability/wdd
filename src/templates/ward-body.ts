@@ -27,6 +27,20 @@ export const MANUAL_SMOKE_TEST_SECTION = `## Manual Smoke Test
 - [ ] {concrete observable thing}
 `;
 
+export const WARD_TEMPLATE_FRONTMATTER = `---
+ward: 0
+revision: null
+name: ""
+epic: ""
+status: planned
+dependencies: []
+layer: typescript
+estimated_tests: 0
+created: ""
+completed: null
+---
+`;
+
 export const WARD_BODY_TEMPLATE = `# Ward {NNN}: {Name}
 
 ## Scope
@@ -57,3 +71,5 @@ ${MANUAL_SMOKE_TEST_SECTION}
 ## Verification
 {How to prove this Ward is complete}
 `;
+
+export const WARD_TEMPLATE = WARD_TEMPLATE_FRONTMATTER + WARD_BODY_TEMPLATE;

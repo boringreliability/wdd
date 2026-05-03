@@ -2,7 +2,7 @@
   "project": "wdd",
   "version": "0.1.0",
   "methodology": "wdd",
-  "wdd_version": "1.0",
+  "wdd_version": "1.1",
   "ai_tools": {
     "primary": "claude-code",
     "review": []

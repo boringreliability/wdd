@@ -87,7 +87,11 @@ describe("Ward 001: Project Scaffold + Init", () => {
     const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
     assert.equal(config.project, "test-project");
     assert.equal(config.methodology, "wdd");
-    assert.equal(config.wdd_version, "1.0");
+    // Schema version is bumped by Ward 17 to "1.1". Just assert it's set.
+    assert.ok(
+      typeof config.wdd_version === "string" && /^\d+\.\d+$/.test(config.wdd_version),
+      `wdd_version should be set to a semver-like string. Got: ${config.wdd_version}`
+    );
     assert.equal(config.ward_prefix, "ward");
     assert.equal(config.ward_digits, 3);
   });

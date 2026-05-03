@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { todayIso } from "../utils/config.js";
-import { WARD_BODY_TEMPLATE } from "../templates/ward-body.js";
+import { WARD_TEMPLATE } from "../templates/ward-body.js";
+import { CURRENT_SCHEMA_VERSION } from "./upgrade.js";
 
 export interface InitOptions {
   name: string;
@@ -147,7 +148,7 @@ _None_
         project: name,
         version: "0.1.0",
         methodology: "wdd",
-        wdd_version: "1.0",
+        wdd_version: CURRENT_SCHEMA_VERSION,
         ai_tools: {
           primary: "claude-code",
           review: [],
@@ -197,22 +198,6 @@ _None_
   console.log(`  ├── templates/`);
   console.log(`  └── adapters/`);
 }
-
-const WARD_TEMPLATE_FRONTMATTER = `---
-ward: 0
-revision: null
-name: ""
-epic: ""
-status: planned
-dependencies: []
-layer: typescript
-estimated_tests: 0
-created: ""
-completed: null
----
-`;
-
-const WARD_TEMPLATE = WARD_TEMPLATE_FRONTMATTER + WARD_BODY_TEMPLATE;
 
 const EPIC_TEMPLATE = `# Epic {NN}: {Name}
 

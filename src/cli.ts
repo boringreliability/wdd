@@ -17,6 +17,7 @@ import {
   formatInventory,
   type ExportEntry,
 } from "./commands/api.js";
+import { upgradeProject } from "./commands/upgrade.js";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -75,6 +76,7 @@ Commands:
   bootstrap           Install AI adapter (claude|cursor)
   eval                Validate skill evals
   api                 List exports from src/ (--file, --kind filters)
+  upgrade             Migrate .wdd/ schema to current version (--dry-run)
 
 Options:
   --help              Show this help message
@@ -257,6 +259,33 @@ async function main(): Promise<void> {
         kind,
       });
       console.log(formatInventory(inventory));
+      break;
+    }
+    case "upgrade": {
+      const dryRun = hasFlag("dry-run");
+      const result = upgradeProject(process.cwd(), { dryRun });
+
+      if (result.migrations.length === 0) {
+        console.log(`Already on schema version ${result.toVersion}.`);
+        break;
+      }
+
+      const suffix = dryRun ? " (dry-run)" : "";
+      console.log(`Upgrading from ${result.fromVersion} to ${result.toVersion}${suffix}\n`);
+
+      let totalSteps = 0;
+      for (const m of result.migrations) {
+        console.log(`Migration ${m.version}:`);
+        for (const step of m.steps) {
+          console.log(`  ${step.action.padEnd(11)} ${step.path}  — ${step.description}`);
+          totalSteps++;
+        }
+        console.log("");
+      }
+
+      console.log(
+        `${totalSteps} change${totalSteps === 1 ? "" : "s"} ${dryRun ? "would be applied" : "applied"}.`
+      );
       break;
     }
     default:

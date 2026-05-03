@@ -1,13 +1,14 @@
 # Context — WDD CLI
 
 ## Last Updated
-Ward 17 complete — 2026-05-03
+Ward 16 complete — 2026-05-03
 
 ## Current State
-All 20 Wards complete (1-17 + 5b + 13b + 15b). 153 tests passing.
-15 commands. Schema versioning introduced: `wdd upgrade` migrates older `.wdd/` initializations forward.
-This project's own schema bumped from 1.0 → 1.1 via dogfooding.
-Migration registry is forward-looking — bump version + add migration entry travel together.
+All 19 Wards complete (1-16 + 5b + 13b + 15b). 144 tests passing.
+14 commands now including `wdd api` for export inventory.
+CLI revision-suffix bug (parseInt stripping "b") fixed across status/reopen/complete.
+Reopen template now has Manual Smoke Test parity with Ward 15.
+`wdd session` includes EXPORTS section for AI context — preventing reinvention is now structural, not aspirational.
 Installed via `npm link` globally. Dogfooding — WDD CLI manages its own development.
 
 ## Architecture Decisions Made
@@ -28,8 +29,6 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 | Export inventory as wiring forcing function | `wdd api` regex scanner over `src/**/*.ts`; surfaced in `wdd session` so AI sees what exists before writing new utilities | 16 |
 | Revision-aware ward IDs end-to-end | `parseWardId()` + `wardFilename()` — string IDs ("15b") flow from CLI through commands; `parseInt()` removed from cli.ts handlers | 16 |
 | `MANUAL_SMOKE_TEST_SECTION` constant | Shared between WARD_BODY_TEMPLATE and reopen body — fix wards now have same smoke-test structure as new wards | 16 |
-| Schema version contract | `wdd_version` in config.json is source of truth; bumping requires migration entry in same Ward — version + migration travel together | 17 |
-| Migrations are additive only | `wdd upgrade` never deletes, never touches user content, never silent-downgrades; safe to run, idempotent | 17 |
 
 ## Active Constraints
 - Zero runtime dependencies beyond Node built-ins
@@ -41,17 +40,16 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 ## Key Metrics
 | Metric | Value | Ward |
 |--------|-------|------|
-| Commands implemented | 15 | 17 |
-| Tests | 153 actual | 17 |
-| Wards complete | 20/20 | 17 |
-| Schema version | 1.1 | 17 |
+| Commands implemented | 14 | 16 |
+| Tests | 144 actual | 16 |
+| Wards complete | 19/19 | 16 |
+| Exports inventoried | 57 across 21 files | 16 |
 
 ## Known Issues
-- Multi-line function/type signatures in `wdd api` only show the first line. Acceptable MVP — most exports are single-line.
-- `wdd api` hardcodes `src/` as scan root and TypeScript-only file extensions. Doesn't work for Python, Rust, Go, mixed-language, or repos with `lib/` instead. Candidate for Ward 18: configurable scan paths in `config.json`.
+- Multi-line function/type signatures in `wdd api` only show the first line. Acceptable MVP — most exports are single-line. Future enhancement candidate.
 
 ## What Comes Next
-- Ward 18: Configurable api scan — `config.json` declares scan paths and file patterns; AI agent fills these in during `wdd init` or via a new `wdd configure` flow
-- Integration Test Requirement — structural template addition that requires each Ward with cross-module changes to declare integration test scope
+- Ward 17: Upgrade/Migration Command — `wdd upgrade` for at migrere ældre `.wdd/` strukturer mellem schema-versioner. First task: bump `wdd_version` whenever schema evolves and define migration steps from 1.0 → current.
+- Integration Test Requirement (Ward 18?) — structural template addition that requires each Ward with cross-module changes to declare integration test scope
 - Publish to npm as `wdd` package
 - Real-world validation in other projects (kmd-regelsim)
