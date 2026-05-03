@@ -40,6 +40,7 @@ gold → complete (via wdd complete)
 | \`wdd search <query> [--tag <tag>]\` | Search project memory |
 | \`wdd bootstrap claude\\|cursor\` | Install AI adapter |
 | \`wdd init --name "project"\` | Initialize WDD in a new project |
+| \`wdd api [--file <pattern>] [--kind <function\\|interface\\|type\\|const\\|class>]\` | List exports from src/ — check this before writing new utilities to avoid reinvention |
 
 ## Manual Smoke Test Protocol (MANDATORY before Gold approval)
 

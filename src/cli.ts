@@ -12,6 +12,11 @@ import { searchMemory } from "./commands/search.js";
 import { createEpic } from "./commands/epic-create.js";
 import { bootstrapAdapter } from "./commands/bootstrap.js";
 import { validateEvals } from "./commands/eval.js";
+import {
+  inventoryExports,
+  formatInventory,
+  type ExportEntry,
+} from "./commands/api.js";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -68,6 +73,8 @@ Commands:
   validate            Check structure and invariants
   search              Search project memory
   bootstrap           Install AI adapter (claude|cursor)
+  eval                Validate skill evals
+  api                 List exports from src/ (--file, --kind filters)
 
 Options:
   --help              Show this help message
@@ -106,7 +113,7 @@ async function handleWard(): Promise<void> {
         throw new Error("Usage: wdd ward status <id> <new-status> [--feedback <text>]");
       }
       const feedback = getFlag("feedback");
-      await updateWardStatus(process.cwd(), parseInt(wardId, 10), newStatus, feedback);
+      await updateWardStatus(process.cwd(), wardId, newStatus, feedback);
       break;
     }
     case "reopen": {
@@ -119,7 +126,7 @@ async function handleWard(): Promise<void> {
       if (!reason) {
         throw new Error("--reason is required for ward reopen");
       }
-      await reopenWard(process.cwd(), parseInt(wardId, 10), reason);
+      await reopenWard(process.cwd(), wardId, reason);
       break;
     }
     default:
@@ -239,7 +246,17 @@ async function main(): Promise<void> {
       if (!wardId) {
         throw new Error("Usage: wdd complete <ward-id>");
       }
-      await completeWard(process.cwd(), parseInt(wardId, 10));
+      await completeWard(process.cwd(), wardId);
+      break;
+    }
+    case "api": {
+      const file = getFlag("file");
+      const kind = getFlag("kind") as ExportEntry["kind"] | undefined;
+      const inventory = inventoryExports(process.cwd(), {
+        file,
+        kind,
+      });
+      console.log(formatInventory(inventory));
       break;
     }
     default:

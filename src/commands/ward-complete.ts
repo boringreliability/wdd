@@ -9,7 +9,7 @@ import {
   isStatus,
   statusLabel,
 } from "../utils/status.js";
-import { formatWardId, wardFilename } from "../utils/ward-id.js";
+import { formatWardId, wardFilename, parseWardId } from "../utils/ward-id.js";
 import { readProjectName } from "../utils/config.js";
 
 export interface CompleteResult {
@@ -18,11 +18,16 @@ export interface CompleteResult {
 
 export async function completeWard(
   projectDir: string,
-  wardId: number
+  wardId: number | string
 ): Promise<CompleteResult> {
+  const parsed = parseWardId(wardId);
+  if (!parsed) {
+    throw new Error(`Invalid ward id: ${wardId}`);
+  }
+
   const wardsDir = path.join(projectDir, ".wdd", "wards");
-  const padded = formatWardId(wardId);
-  const filename = wardFilename(wardId);
+  const padded = formatWardId(parsed.num, parsed.revision);
+  const filename = wardFilename(parsed.num, parsed.revision);
   const wardPath = path.join(wardsDir, filename);
 
   if (!fs.existsSync(wardPath)) {

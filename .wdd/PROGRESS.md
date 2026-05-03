@@ -1,7 +1,7 @@
 # Progress — wdd
 
 ## Summary
-18 of 18 Wards complete · 126 estimated tests · 0 blocked
+19 of 19 Wards complete · 136 estimated tests · 0 blocked
 
 ## Ward Status
 | Ward | Name | Tests | Status | Date |
@@ -24,6 +24,7 @@
 | 014 | Skill Evals | 6 | ✅ Complete | 2026-05-03 |
 | 015 | Manual Smoke Test Protocol | 7 | ✅ Complete | 2026-05-03 |
 | 015b | Manual Smoke Test Protocol (fix b) | 3 | ✅ Complete | 2026-05-03 |
+| 016 | Wiring Verification & CLI Fixes | 10 | ✅ Complete | 2026-05-03 |
 
 ## Test Summary
-- Estimated total: 126
+- Estimated total: 136

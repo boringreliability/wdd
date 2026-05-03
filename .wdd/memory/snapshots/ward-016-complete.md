@@ -1,14 +1,12 @@
 # Context — WDD CLI
 
 ## Last Updated
-Ward 16 complete — 2026-05-03
+Ward 15b complete — 2026-05-03
 
 ## Current State
-All 19 Wards complete (1-16 + 5b + 13b + 15b). 144 tests passing.
-14 commands now including `wdd api` for export inventory.
-CLI revision-suffix bug (parseInt stripping "b") fixed across status/reopen/complete.
-Reopen template now has Manual Smoke Test parity with Ward 15.
-`wdd session` includes EXPORTS section for AI context — preventing reinvention is now structural, not aspirational.
+All 18 Wards complete (1-15 + 5b + 13b + 15b). 134 tests passing.
+CLI introduces Manual Smoke Test Protocol (Ward 15) with code-fence-aware extraction (15b).
+Simplify pass extracted shared utilities: `src/utils/{status,ward-id,config,section}.ts` and `src/templates/ward-body.ts`.
 Installed via `npm link` globally. Dogfooding — WDD CLI manages its own development.
 
 ## Architecture Decisions Made
@@ -26,9 +24,6 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 | Manual Smoke Test as third forcing function | Automated tests prove functions; integration tests prove wiring; smoke tests prove humans can use it | 15 |
 | Code-fence-aware section extraction | `## ` headings inside ``` are content, not structure — required for ward bodies that contain markdown examples | 15b |
 | Shared utilities in `src/utils/` | `status`, `ward-id`, `config`, `section` — single source of truth for cross-cutting concerns; reduces drift | simplify |
-| Export inventory as wiring forcing function | `wdd api` regex scanner over `src/**/*.ts`; surfaced in `wdd session` so AI sees what exists before writing new utilities | 16 |
-| Revision-aware ward IDs end-to-end | `parseWardId()` + `wardFilename()` — string IDs ("15b") flow from CLI through commands; `parseInt()` removed from cli.ts handlers | 16 |
-| `MANUAL_SMOKE_TEST_SECTION` constant | Shared between WARD_BODY_TEMPLATE and reopen body — fix wards now have same smoke-test structure as new wards | 16 |
 
 ## Active Constraints
 - Zero runtime dependencies beyond Node built-ins
@@ -40,16 +35,15 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 ## Key Metrics
 | Metric | Value | Ward |
 |--------|-------|------|
-| Commands implemented | 14 | 16 |
-| Tests | 144 actual | 16 |
-| Wards complete | 19/19 | 16 |
-| Exports inventoried | 57 across 21 files | 16 |
+| Commands implemented | 13 | 15 |
+| Tests | 134 actual | 15b |
+| Wards complete | 18/18 | 15b |
 
 ## Known Issues
-- Multi-line function/type signatures in `wdd api` only show the first line. Acceptable MVP — most exports are single-line. Future enhancement candidate.
+- CLI's `wdd ward status <id>` and `wdd complete <id>` use `parseInt()` on the id, stripping revision suffixes (e.g. "15b" → 15). Underlying `updateWardStatus()` already accepts strings via `parseWardId()`. Fix is one-line in [cli.ts](src/cli.ts) but needs `completeWard()` to also accept `number | string`. Candidate for Ward 16.
 
 ## What Comes Next
-- Ward 17: Upgrade/Migration Command — `wdd upgrade` for at migrere ældre `.wdd/` strukturer mellem schema-versioner. First task: bump `wdd_version` whenever schema evolves and define migration steps from 1.0 → current.
-- Integration Test Requirement (Ward 18?) — structural template addition that requires each Ward with cross-module changes to declare integration test scope
+- Ward 16: Export Inventory + Integration Test Requirement + CLI revision-aware ID parsing — forebygger reinvention, fanger wiring-huller, fixer kendt CLI bug
+- Ward 17: Upgrade/Migration Command — `wdd upgrade` for at migrere ældre `.wdd/` strukturer mellem schema-versioner
 - Publish to npm as `wdd` package
 - Real-world validation in other projects (kmd-regelsim)

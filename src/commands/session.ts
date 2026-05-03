@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseFrontmatter } from "../frontmatter.js";
+import { inventoryExports, formatInventory } from "./api.js";
 
 export function assembleSession(projectDir: string): string {
   const wddDir = path.join(projectDir, ".wdd");
@@ -29,6 +30,10 @@ export function assembleSession(projectDir: string): string {
     sections.push(fs.readFileSync(progressPath, "utf-8").trim());
     sections.push("");
   }
+
+  sections.push("═══ EXPORTS ═══");
+  sections.push(formatInventory(inventoryExports(projectDir)));
+  sections.push("");
 
   // Current Ward — first non-complete
   const currentWard = findCurrentWard(wddDir);

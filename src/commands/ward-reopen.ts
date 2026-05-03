@@ -1,16 +1,22 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseFrontmatter, serializeFrontmatter } from "../frontmatter.js";
-import { formatWardId, wardFilename } from "../utils/ward-id.js";
+import { formatWardId, wardFilename, parseWardId } from "../utils/ward-id.js";
 import { todayIso } from "../utils/config.js";
+import { MANUAL_SMOKE_TEST_SECTION } from "../templates/ward-body.js";
 
 export async function reopenWard(
   projectDir: string,
-  wardId: number,
+  wardId: number | string,
   reason: string
 ): Promise<string> {
+  const parsed = parseWardId(wardId);
+  if (!parsed) {
+    throw new Error(`Invalid ward id: ${wardId}`);
+  }
+
   const wardsDir = path.join(projectDir, ".wdd", "wards");
-  const originalFilename = wardFilename(wardId);
+  const originalFilename = wardFilename(parsed.num, parsed.revision);
   const originalPath = path.join(wardsDir, originalFilename);
 
   if (!fs.existsSync(originalPath)) {
@@ -25,8 +31,10 @@ export async function reopenWard(
     );
   }
 
-  const revision = getNextRevision(wardsDir, formatWardId(wardId));
-  const fixFilename = wardFilename(wardId, revision);
+  // Fix wards always extend the same num — find the next free letter
+  const numPadded = formatWardId(parsed.num);
+  const revision = getNextRevision(wardsDir, numPadded);
+  const fixFilename = wardFilename(parsed.num, revision);
   const today = todayIso();
 
   const updatedOriginalBody =
@@ -42,7 +50,7 @@ export async function reopenWard(
   );
 
   const fixFrontmatter: Record<string, unknown> = {
-    ward: wardId,
+    ward: parsed.num,
     revision,
     name: `${original.frontmatter.name} (fix ${revision})`,
     epic: original.frontmatter.epic,
@@ -54,7 +62,7 @@ export async function reopenWard(
     completed: null,
   };
 
-  const fixBody = `# Ward ${formatWardId(wardId, revision)}: ${original.frontmatter.name} (fix)
+  const fixBody = `# Ward ${formatWardId(parsed.num, revision)}: ${original.frontmatter.name} (fix)
 
 ## Reopened from
 Original: ${originalFilename}
@@ -75,6 +83,7 @@ Reason: ${reason}
 ## Must DO
 - {Explicit requirement}
 
+${MANUAL_SMOKE_TEST_SECTION}
 ## Verification
 {How to prove this fix Ward is complete}
 `;
