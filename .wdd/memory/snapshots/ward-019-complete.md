@@ -1,15 +1,13 @@
 # Context — WDD CLI
 
 ## Last Updated
-Ward 19 complete — 2026-05-16
+Ward 18 complete — 2026-05-04
 
 ## Current State
-All 22 Wards complete (1-19 + 5b + 13b + 15b). 182 tests passing.
-18 commands. Epic 02 (Orchestration) is now active.
-`wdd graph` + `wdd ready` make the existing `dependencies` array queryable.
-`wdd session` has new PLANNED section with stale backlog detection — closes the meta-gap that wdd_v2.md sat as a brain dump for weeks.
-`wdd validate` surfaces stale backlog items + orphaned deps as warnings (not errors).
-`WDD_NOW` env var enables deterministic time-sensitive testing across CLI surfaces.
+All 21 Wards complete (1-18 + 5b + 13b + 15b). 166 tests passing.
+16 commands. WDD is now language-agnostic: `wdd configure` detects repo structure (TS, Python, monorepo);
+`wdd api` reads scan config from `.wdd/config.json`; parser registry supports TS + Python (more languages = new entries).
+Schema bumped to 1.2 via dogfooding.
 Installed via `npm link` globally. Dogfooding — WDD CLI manages its own development.
 
 ## Architecture Decisions Made
@@ -35,10 +33,6 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 | Parser registry as plugin architecture | Languages are data (parsers in array), not conditional cascades — adding Go/Rust = new entry, no core changes | 18 |
 | Glob-aware scan config | `config.scan.{roots, extensions, exclude}` makes WDD language-agnostic; glob roots (`packages/*/src/`) work | 18 |
 | Sentinel placeholders in glob-to-regex | Avoids re-substitution bugs when one pass's output contains chars the next pass would re-match | 18 |
-| SESSION_SECTIONS as canonical section ordering | Section order is data (constant + handler map), not implicit `push` sequence; future Wards must update the constant | 19 |
-| Discoverability hooks against ourselves | `wdd session` PLANNED section + `wdd validate` stale-backlog WARN — addresses the wdd_v2.md drift we let happen | 19 |
-| Revision wards are distinct nodes | `5b.complete` does not satisfy dep-on-`5`; they're separate units of work in the DAG | 19 |
-| Case-sensitive lookaround for ID matching | `(?<![A-Za-z0-9_-])${id}(?![A-Za-z0-9_-])` — handles hyphens that `\b` mishandles; case-sensitive matches convention | 19 |
 
 ## Active Constraints
 - Zero runtime dependencies beyond Node built-ins
@@ -50,19 +44,17 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 ## Key Metrics
 | Metric | Value | Ward |
 |--------|-------|------|
-| Commands implemented | 18 | 19 |
-| Tests | 182 actual | 19 |
-| Wards complete | 22/22 | 19 |
+| Commands implemented | 16 | 18 |
+| Tests | 166 actual | 18 |
+| Wards complete | 21/21 | 18 |
 | Schema version | 1.2 | 18 |
 | Languages supported | TypeScript, Python | 18 |
-| Planned wards in orchestration epic | 6 (20-25) | 19 |
 
 ## Known Issues
-- Multi-line function/type signatures in `wdd api` only show the first line. Acceptable MVP.
-- BACKLOG.md has 4 stale items (BUG-001, CLI-012, CLI-013, CLI-014). `wdd validate` surfaces them. Cleanup is a separate followup, not a Ward.
+- Multi-line function/type signatures in `wdd api` only show the first line. Acceptable MVP — most exports are single-line.
 
 ## What Comes Next
-- Ward 20: Planning Metadata Frontmatter (next planned ward in orchestration epic)
-- Wards 21-25: Parallel batches, locks, review modes, visualization, contest
+- Integration Test Requirement — structural template addition that requires each Ward with cross-module changes to declare integration test scope
+- Additional language parsers (Go, Rust, Java) — drop-in extensions of `PARSERS` array in api.ts
 - Publish to npm as `wdd` package
 - Real-world validation in other projects (kmd-regelsim)

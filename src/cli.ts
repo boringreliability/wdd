@@ -19,6 +19,12 @@ import {
 } from "./commands/api.js";
 import { upgradeProject } from "./commands/upgrade.js";
 import {
+  buildDependencyGraph,
+  renderGraph,
+  renderReadyList,
+} from "./commands/graph.js";
+import { clockFromEnv } from "./utils/clock.js";
+import {
   detectScanConfig,
   writeScanConfig,
   formatScanConfig,
@@ -83,6 +89,8 @@ Commands:
   api                 List exports from src/ (--file, --kind filters)
   upgrade             Migrate .wdd/ schema to current version (--dry-run)
   configure           Detect scan paths/extensions; write to config (--write)
+  graph               Print dependency tree of all wards
+  ready               List wards whose dependencies are complete
 
 Options:
   --help              Show this help message
@@ -204,20 +212,34 @@ async function main(): Promise<void> {
       break;
     }
     case "session": {
-      const output = assembleSession(process.cwd());
+      const output = assembleSession(process.cwd(), { clock: clockFromEnv() });
       process.stdout.write(output);
       break;
     }
     case "validate": {
-      const result = validateProject(process.cwd());
+      const result = validateProject(process.cwd(), { clock: clockFromEnv() });
       for (const err of result.errors) console.error(`  ERROR: ${err}`);
       for (const warn of result.warnings) console.log(`  WARN: ${warn}`);
       if (result.valid) {
-        console.log("Validation passed.");
+        if (result.warnings.length > 0) {
+          console.log(`Validation passed with ${result.warnings.length} warning(s).`);
+        } else {
+          console.log("Validation passed.");
+        }
       } else {
         console.error(`Validation failed: ${result.errors.length} error(s).`);
         process.exit(1);
       }
+      break;
+    }
+    case "graph": {
+      const graph = buildDependencyGraph(process.cwd());
+      console.log(renderGraph(graph));
+      break;
+    }
+    case "ready": {
+      const graph = buildDependencyGraph(process.cwd());
+      console.log(renderReadyList(graph));
       break;
     }
     case "status": {

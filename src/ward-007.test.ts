@@ -88,11 +88,14 @@ describe("Ward 007: Validate Command", () => {
     frontmatter.dependencies = [99];
     fs.writeFileSync(wardPath, serializeFrontmatter(frontmatter as Record<string, unknown>, body));
 
+    // Ward 19 changed orphan deps from errors to warnings — they no longer
+    // block validate. Still asserts the missing dep is surfaced, just on
+    // `warnings` instead of `errors`.
     const result = validateProject(tmpDir);
-    assert.equal(result.valid, false);
+    assert.equal(result.valid, true, "Orphans are now warnings, not errors");
     assert.ok(
-      result.errors.some((e) => e.includes("99")),
-      `Should mention missing ward 99: ${result.errors}`
+      result.warnings.some((w) => w.includes("99")),
+      `Should mention missing ward 99 as warning: ${result.warnings}`
     );
   });
 

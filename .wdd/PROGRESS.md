@@ -1,7 +1,7 @@
 # Progress — wdd
 
 ## Summary
-21 of 28 Wards complete · 213 estimated tests · 0 blocked
+22 of 28 Wards complete · 219 estimated tests · 0 blocked
 
 ## Ward Status
 | Ward | Name | Tests | Status | Date |
@@ -27,7 +27,7 @@
 | 016 | Wiring Verification & CLI Fixes | 10 | ✅ Complete | 2026-05-03 |
 | 017 | Schema Migration & Upgrade | 9 | ✅ Complete | 2026-05-03 |
 | 018 | Configurable Scan & Multi-Language API | 13 | ✅ Complete | 2026-05-16 |
-| 019 | Dependency Graph & Ready Queue | 8 | 📋 Planned | - |
+| 019 | Dependency Graph, Ready Queue & Backlog Discoverability | 14 | ✅ Complete | 2026-05-16 |
 | 020 | Planning Metadata Frontmatter | 9 | 📋 Planned | - |
 | 021 | Parallel Batch Computation | 8 | 📋 Planned | - |
 | 022 | Ward Locking | 7 | 📋 Planned | - |
@@ -36,4 +36,4 @@
 | 025 | Multi-Agent Contest | 9 | 📋 Planned | - |
 
 ## Test Summary
-- Estimated total: 213
+- Estimated total: 219
