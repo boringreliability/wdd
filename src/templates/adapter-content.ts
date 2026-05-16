@@ -41,6 +41,8 @@ gold → complete (via wdd complete)
 | \`wdd bootstrap claude\\|cursor\` | Install AI adapter |
 | \`wdd init --name "project"\` | Initialize WDD in a new project |
 | \`wdd api [--file <pattern>] [--kind <function\\|interface\\|type\\|const\\|class>]\` | List exports from src/ — check this before writing new utilities to avoid reinvention |
+| \`wdd configure [--write]\` | Detect repo scan paths/extensions (for non-TS or non-\`src/\` projects). Run with \`--write\` to apply detected config |
+| \`wdd upgrade [--dry-run]\` | Migrate \`.wdd/\` schema to current version |
 
 ## Manual Smoke Test Protocol (MANDATORY before Gold approval)
 

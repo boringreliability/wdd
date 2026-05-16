@@ -18,6 +18,11 @@ import {
   type ExportEntry,
 } from "./commands/api.js";
 import { upgradeProject } from "./commands/upgrade.js";
+import {
+  detectScanConfig,
+  writeScanConfig,
+  formatScanConfig,
+} from "./commands/configure.js";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -77,6 +82,7 @@ Commands:
   eval                Validate skill evals
   api                 List exports from src/ (--file, --kind filters)
   upgrade             Migrate .wdd/ schema to current version (--dry-run)
+  configure           Detect scan paths/extensions; write to config (--write)
 
 Options:
   --help              Show this help message
@@ -259,6 +265,18 @@ async function main(): Promise<void> {
         kind,
       });
       console.log(formatInventory(inventory));
+      break;
+    }
+    case "configure": {
+      const write = hasFlag("write");
+      const detected = detectScanConfig(process.cwd());
+      console.log(formatScanConfig(detected));
+      if (write) {
+        writeScanConfig(process.cwd(), detected);
+        console.log("\nWritten to .wdd/config.json");
+      } else {
+        console.log("\nTo apply: wdd configure --write");
+      }
       break;
     }
     case "upgrade": {

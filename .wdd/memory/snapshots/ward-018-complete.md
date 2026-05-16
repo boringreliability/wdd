@@ -1,13 +1,13 @@
 # Context — WDD CLI
 
 ## Last Updated
-Ward 18 complete — 2026-05-04
+Ward 17 complete — 2026-05-03
 
 ## Current State
-All 21 Wards complete (1-18 + 5b + 13b + 15b). 166 tests passing.
-16 commands. WDD is now language-agnostic: `wdd configure` detects repo structure (TS, Python, monorepo);
-`wdd api` reads scan config from `.wdd/config.json`; parser registry supports TS + Python (more languages = new entries).
-Schema bumped to 1.2 via dogfooding.
+All 20 Wards complete (1-17 + 5b + 13b + 15b). 153 tests passing.
+15 commands. Schema versioning introduced: `wdd upgrade` migrates older `.wdd/` initializations forward.
+This project's own schema bumped from 1.0 → 1.1 via dogfooding.
+Migration registry is forward-looking — bump version + add migration entry travel together.
 Installed via `npm link` globally. Dogfooding — WDD CLI manages its own development.
 
 ## Architecture Decisions Made
@@ -30,9 +30,6 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 | `MANUAL_SMOKE_TEST_SECTION` constant | Shared between WARD_BODY_TEMPLATE and reopen body — fix wards now have same smoke-test structure as new wards | 16 |
 | Schema version contract | `wdd_version` in config.json is source of truth; bumping requires migration entry in same Ward — version + migration travel together | 17 |
 | Migrations are additive only | `wdd upgrade` never deletes, never touches user content, never silent-downgrades; safe to run, idempotent | 17 |
-| Parser registry as plugin architecture | Languages are data (parsers in array), not conditional cascades — adding Go/Rust = new entry, no core changes | 18 |
-| Glob-aware scan config | `config.scan.{roots, extensions, exclude}` makes WDD language-agnostic; glob roots (`packages/*/src/`) work | 18 |
-| Sentinel placeholders in glob-to-regex | Avoids re-substitution bugs when one pass's output contains chars the next pass would re-match | 18 |
 
 ## Active Constraints
 - Zero runtime dependencies beyond Node built-ins
@@ -44,17 +41,17 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 ## Key Metrics
 | Metric | Value | Ward |
 |--------|-------|------|
-| Commands implemented | 16 | 18 |
-| Tests | 166 actual | 18 |
-| Wards complete | 21/21 | 18 |
-| Schema version | 1.2 | 18 |
-| Languages supported | TypeScript, Python | 18 |
+| Commands implemented | 15 | 17 |
+| Tests | 153 actual | 17 |
+| Wards complete | 20/20 | 17 |
+| Schema version | 1.1 | 17 |
 
 ## Known Issues
 - Multi-line function/type signatures in `wdd api` only show the first line. Acceptable MVP — most exports are single-line.
+- `wdd api` hardcodes `src/` as scan root and TypeScript-only file extensions. Doesn't work for Python, Rust, Go, mixed-language, or repos with `lib/` instead. Candidate for Ward 18: configurable scan paths in `config.json`.
 
 ## What Comes Next
+- Ward 18: Configurable api scan — `config.json` declares scan paths and file patterns; AI agent fills these in during `wdd init` or via a new `wdd configure` flow
 - Integration Test Requirement — structural template addition that requires each Ward with cross-module changes to declare integration test scope
-- Additional language parsers (Go, Rust, Java) — drop-in extensions of `PARSERS` array in api.ts
 - Publish to npm as `wdd` package
 - Real-world validation in other projects (kmd-regelsim)

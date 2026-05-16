@@ -1,6 +1,27 @@
 import fs from "node:fs";
 import path from "node:path";
 
+export interface ScanConfig {
+  roots: string[];
+  extensions: string[];
+  exclude: string[];
+}
+
+export const DEFAULT_SCAN: ScanConfig = {
+  roots: ["src/"],
+  extensions: [".ts", ".tsx"],
+  exclude: [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/*.test.tsx",
+    "**/*.spec.tsx",
+    "**/*.d.ts",
+    "**/dist/**",
+    "**/build/**",
+    "**/node_modules/**",
+  ],
+};
+
 export interface WddConfig {
   project: string;
   version?: string;
@@ -8,6 +29,7 @@ export interface WddConfig {
   wdd_version?: string;
   ward_prefix?: string;
   ward_digits?: number;
+  scan?: ScanConfig;
   [key: string]: unknown;
 }
 

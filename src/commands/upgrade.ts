@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
-import { readConfig, configPath } from "../utils/config.js";
+import { readConfig, configPath, DEFAULT_SCAN } from "../utils/config.js";
 import { WARD_TEMPLATE } from "../templates/ward-body.js";
 
-export const CURRENT_SCHEMA_VERSION = "1.1";
+export const CURRENT_SCHEMA_VERSION = "1.2";
 
 export interface MigrationStep {
   action: "create" | "overwrite" | "ensure-dir" | "patch";
@@ -31,6 +31,7 @@ interface MigrationEntry {
 
 export const MIGRATIONS: Record<string, MigrationEntry> = {
   "1.0": { to: "1.1", fn: migrateFrom_1_0_to_1_1 },
+  "1.1": { to: "1.2", fn: migrateFrom_1_1_to_1_2 },
 };
 
 export function upgradeProject(
@@ -136,6 +137,35 @@ function migrateFrom_1_0_to_1_1(projectDir: string, dryRun: boolean): MigrationS
     const cfgPath = configPath(projectDir);
     const config: Record<string, unknown> = readConfig(projectDir) ?? {};
     config.wdd_version = "1.1";
+    fs.writeFileSync(cfgPath, JSON.stringify(config, null, 2));
+  }
+
+  return steps;
+}
+
+function migrateFrom_1_1_to_1_2(projectDir: string, dryRun: boolean): MigrationStep[] {
+  const steps: MigrationStep[] = [];
+  const cfgPath = configPath(projectDir);
+  const config: Record<string, unknown> = readConfig(projectDir) ?? {};
+
+  if (!config.scan) {
+    steps.push({
+      action: "patch",
+      path: ".wdd/config.json",
+      description: "Add default scan block (roots, extensions, exclude)",
+    });
+    if (!dryRun) {
+      config.scan = DEFAULT_SCAN;
+    }
+  }
+
+  steps.push({
+    action: "patch",
+    path: ".wdd/config.json",
+    description: `Bump wdd_version: "1.1" → "1.2"`,
+  });
+  if (!dryRun) {
+    config.wdd_version = "1.2";
     fs.writeFileSync(cfgPath, JSON.stringify(config, null, 2));
   }
 
