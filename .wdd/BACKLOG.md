@@ -2,9 +2,6 @@
 
 ## v0.2.0 (current)
 
-### Priority 1 — Must Have
-- [ ] **CLI-012**: Publish to npm as `wdd` package
-
 ### Priority 2 — Should Have
 - [ ] **CLI-013**: `wdd bootstrap windsurf` — Windsurf adapter
 - [ ] **CLI-014**: `wdd condense` — CONTEXT.md size management
@@ -24,6 +21,10 @@ modes, multi-agent contests) are formalized as planned Wards in
 ## Completed
 
 ### v0.2.0
+- [x] **CLI-012**: Publish to npm as `@boringreliability/wdd` — *first public
+  release 2026-06-03. Binary is `wdd`; install: `npm i -g @boringreliability/wdd`.
+  `wdd` name was taken on npm registry; chose scoped under boringreliability
+  org for namespace consistency with GitHub.*
 - [x] **BUG-001**: CLI `ward status 13b` parses as ward 13 — *fixed in Ward 16
   (parseInt removed from cli.ts handlers; `parseWardId` now threaded through
   `updateWardStatus`, `reopenWard`, `completeWard`)*

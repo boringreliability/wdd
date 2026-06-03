@@ -7,7 +7,7 @@
   "description": "Ward-Driven Development — a control system for AI-assisted software construction",
   "type": "module",
   "bin": {
-    "wdd": "./dist/cli.js"
+    "wdd": "dist/cli.js"
   },
   "files": [
     "dist",

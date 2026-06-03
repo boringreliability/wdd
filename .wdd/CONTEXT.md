@@ -1,7 +1,7 @@
 # Context — WDD CLI
 
 ## Last Updated
-Ward 19 complete — 2026-05-16
+Released to npm — 2026-06-03
 
 ## Current State
 All 22 Wards complete (1-19 + 5b + 13b + 15b). 182 tests passing.
@@ -59,10 +59,13 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 
 ## Known Issues
 - Multi-line function/type signatures in `wdd api` only show the first line. Acceptable MVP.
-- BACKLOG.md has 4 stale items (BUG-001, CLI-012, CLI-013, CLI-014). `wdd validate` surfaces them. Cleanup is a separate followup, not a Ward.
 
 ## What Comes Next
 - Ward 20: Planning Metadata Frontmatter (next planned ward in orchestration epic)
 - Wards 21-25: Parallel batches, locks, review modes, visualization, contest
-- Publish to npm as `wdd` package
-- Real-world validation in other projects (kmd-regelsim)
+- Real-world validation in other projects (kmd-regelsim, vgrid)
+
+## Release History
+- 2026-06-03 — `@boringreliability/wdd@0.2.0` — first npm publish. Name `wdd`
+  squatted on registry; chose scoped package matching GitHub org. Binary is
+  `wdd`. Install: `npm i -g @boringreliability/wdd`.
