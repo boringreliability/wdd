@@ -20,6 +20,17 @@ The binary is `wdd`:
 wdd --help
 ```
 
+Or run without global install:
+
+```bash
+npx @boringreliability/wdd init --name "my-project"
+```
+
+> ⚠️ **Do NOT use `npx wdd`** — there is an unrelated package called `wdd` on
+> npm (a test package that squatted the name). Always use the scoped form
+> `npx @boringreliability/wdd`. The binary name `wdd` only resolves to this
+> package after global install.
+
 ## Quick start
 
 ```bash
@@ -54,7 +65,7 @@ diff, and grep.
 | `wdd graph` | Print dependency tree of all Wards |
 | `wdd ready` | List Wards whose dependencies are complete |
 | `wdd search <query>` | Search project memory (CONTEXT, BACKLOG, Wards) |
-| `wdd bootstrap claude\|cursor` | Install AI adapter skills/rules |
+| `wdd bootstrap claude\|cursor\|copilot` | Install AI adapter skills/rules/prompts |
 | `wdd api` | List exports from `src/` to prevent reinvention |
 | `wdd upgrade` | Migrate older `.wdd/` schema to current version |
 | `wdd configure` | Detect scan paths/extensions for `wdd api` |
@@ -69,10 +80,18 @@ After `wdd init`, install the adapter for your AI of choice:
 ```bash
 wdd bootstrap claude    # Adds .claude/skills/wdd/, /ward, /ward-new
 wdd bootstrap cursor    # Adds .cursor/rules/wdd.mdc
+wdd bootstrap copilot   # Adds .github/copilot-instructions.md + prompts + agent
 ```
 
 The adapters teach the AI the Red/Gold workflow, the file conventions, and
-the manual-smoke-test discipline.
+the manual-smoke-test discipline. Same methodology, three different ways to
+embed it in the AI:
+
+| Adapter | Activation | Files written |
+|---------|------------|---------------|
+| Claude Code | `/wdd`, `/ward`, `/ward-new` skills | `.claude/skills/{wdd,ward,ward-new}/SKILL.md` + evals |
+| Cursor | Always-on rule (`alwaysApply: true`) | `.cursor/rules/wdd.mdc` |
+| GitHub Copilot | Auto-loaded instructions + `/wdd`, `/ward`, `/ward-new` prompts + `wdd` agent | `.github/copilot-instructions.md`, `.github/prompts/*.prompt.md`, `.github/agents/wdd.agent.md` |
 
 ## Principles
 

@@ -1,6 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import { getClaudeSkills, getCursorRule } from "../templates/adapter-content.js";
+import {
+  getClaudeSkills,
+  getCursorRule,
+  getCopilotAdapter,
+} from "../templates/adapter-content.js";
 import { readProjectName } from "../utils/config.js";
 
 export async function bootstrapAdapter(
@@ -16,8 +20,13 @@ export async function bootstrapAdapter(
     case "cursor": {
       return bootstrapCursor(projectDir, projectName);
     }
+    case "copilot": {
+      return bootstrapCopilot(projectDir, projectName);
+    }
     default:
-      throw new Error(`Unknown adapter: ${adapter}. Available: claude, cursor`);
+      throw new Error(
+        `Unknown adapter: ${adapter}. Available: claude, cursor, copilot`
+      );
   }
 }
 
@@ -64,5 +73,21 @@ function bootstrapCursor(projectDir: string, projectName: string): string[] {
 
   console.log(`Installed WDD rule: .cursor/rules/wdd.mdc`);
   return [filePath];
+}
+
+function bootstrapCopilot(projectDir: string, projectName: string): string[] {
+  const files = getCopilotAdapter(projectName);
+  const created: string[] = [];
+
+  console.log("Installed WDD Copilot adapter:");
+  for (const file of files) {
+    const fullPath = path.join(projectDir, file.path);
+    fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+    fs.writeFileSync(fullPath, file.content);
+    created.push(file.path);
+    console.log(`  ${file.path}`);
+  }
+
+  return created;
 }
 

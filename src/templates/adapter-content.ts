@@ -213,3 +213,77 @@ alwaysApply: true
 
 ${getSharedContent(projectName)}`;
 }
+
+export interface CopilotAdapterFile {
+  path: string;
+  content: string;
+}
+
+function stripClaudeFrontmatter(skillContent: string): string {
+  const match = skillContent.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n?([\s\S]*)$/);
+  return match ? match[1] : skillContent;
+}
+
+export function getCopilotAdapter(projectName: string): CopilotAdapterFile[] {
+  const claudeSkills = getClaudeSkills(projectName);
+  const wddBody = stripClaudeFrontmatter(claudeSkills[0].content);
+  const wardBody = stripClaudeFrontmatter(claudeSkills[1].content);
+  const wardNewBody = stripClaudeFrontmatter(claudeSkills[2].content);
+
+  return [
+    {
+      path: ".github/copilot-instructions.md",
+      content: getSharedContent(projectName),
+    },
+    {
+      path: ".github/prompts/wdd.prompt.md",
+      content: `---
+description: 'Get full WDD project context — current state, active Ward, blockers'
+---
+${wddBody}`,
+    },
+    {
+      path: ".github/prompts/ward.prompt.md",
+      content: `---
+description: 'Continue the current WDD Ward — follow checkpoint discipline with mandatory human approval gates'
+---
+${wardBody}`,
+    },
+    {
+      path: ".github/prompts/ward-new.prompt.md",
+      content: `---
+description: 'Create a new WDD Ward with full spec, tests table, and Manual Smoke Test section'
+---
+${wardNewBody}`,
+    },
+    {
+      path: ".github/agents/wdd.agent.md",
+      content: `---
+description: 'WDD discipline enforcer — runs Ward checkpoints and halts at human approval gates'
+---
+
+# WDD Discipline Agent — ${projectName}
+
+You enforce Ward-Driven Development discipline. Your primary job is to **HALT**
+at every approval gate and wait for the human's explicit "approved" / "godkendt"
+before proceeding. Skipping a gate is the worst thing you can do.
+
+${getSharedContent(projectName)}
+
+## How You Operate
+
+1. **At session start:** run \`wdd session\` and read the output. Identify the
+   active Ward and its current status.
+2. **At each status transition:** STOP. Present what you did. Wait for the
+   human to type "approved" or "godkendt" verbatim. Do NOT infer approval
+   from "looks good" or "👍" — require the explicit word.
+3. **Before Gold approval:** the Manual Smoke Test from the Ward file MUST be
+   executed by the human. You set it up, but the human must report the result.
+4. **When you would normally autonomously proceed:** STOP instead. Ask.
+
+If the human gives you ambiguous direction, ask one clarifying question and
+then wait. Do not guess.
+`,
+    },
+  ];
+}

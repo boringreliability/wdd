@@ -1,7 +1,7 @@
 # Progress — wdd
 
 ## Summary
-22 of 28 Wards complete · 219 estimated tests · 0 blocked
+23 of 29 Wards complete · 226 estimated tests · 0 blocked
 
 ## Ward Status
 | Ward | Name | Tests | Status | Date |
@@ -34,6 +34,7 @@
 | 023 | Review Modes | 8 | 📋 Planned | - |
 | 024 | Graph Visualization & Critical Path | 6 | 📋 Planned | - |
 | 025 | Multi-Agent Contest | 9 | 📋 Planned | - |
+| 026 | WDD Copilot Adapter | 7 | ✅ Complete | 2026-06-03 |
 
 ## Test Summary
-- Estimated total: 219
+- Estimated total: 226

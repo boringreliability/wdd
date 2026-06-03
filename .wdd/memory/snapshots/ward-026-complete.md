@@ -1,7 +1,7 @@
 # Context — WDD CLI
 
 ## Last Updated
-Ward 26 complete — Copilot adapter shipped 2026-06-03
+Released to npm — 2026-06-03
 
 ## Current State
 All 22 Wards complete (1-19 + 5b + 13b + 15b). 182 tests passing.
@@ -39,8 +39,6 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 | Discoverability hooks against ourselves | `wdd session` PLANNED section + `wdd validate` stale-backlog WARN — addresses the wdd_v2.md drift we let happen | 19 |
 | Revision wards are distinct nodes | `5b.complete` does not satisfy dep-on-`5`; they're separate units of work in the DAG | 19 |
 | Case-sensitive lookaround for ID matching | `(?<![A-Za-z0-9_-])${id}(?![A-Za-z0-9_-])` — handles hyphens that `\b` mishandles; case-sensitive matches convention | 19 |
-| Copilot adapter: instructions + prompts + agent | 3 file types for 3 activation models — always-on, slash command, vælgbar persona. Minimal frontmatter (only `description:`) survives Copilot version churn | 26 |
-| Copilot prompt bodies reuse Claude skill bodies | `stripClaudeFrontmatter` lets us share core directives across adapters; sentinel-string tests catch drift without byte-locking | 26 |
 
 ## Active Constraints
 - Zero runtime dependencies beyond Node built-ins
@@ -53,11 +51,10 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 | Metric | Value | Ward |
 |--------|-------|------|
 | Commands implemented | 18 | 19 |
-| Tests | 190 actual | 26 |
-| Wards complete | 23/23 | 26 |
+| Tests | 182 actual | 19 |
+| Wards complete | 22/22 | 19 |
 | Schema version | 1.2 | 18 |
 | Languages supported | TypeScript, Python | 18 |
-| Adapters | claude, cursor, copilot | 26 |
 | Planned wards in orchestration epic | 6 (20-25) | 19 |
 
 ## Known Issues
@@ -69,9 +66,6 @@ Installed via `npm link` globally. Dogfooding — WDD CLI manages its own develo
 - Real-world validation in other projects (kmd-regelsim, vgrid)
 
 ## Release History
-- 2026-06-03 — `@boringreliability/wdd@0.3.0` — Copilot adapter added.
-  `wdd bootstrap copilot` emits `.github/copilot-instructions.md`, three
-  `prompt.md` slash commands, and one `agent.md` persona.
 - 2026-06-03 — `@boringreliability/wdd@0.2.0` — first npm publish. Name `wdd`
   squatted on registry; chose scoped package matching GitHub org. Binary is
   `wdd`. Install: `npm i -g @boringreliability/wdd`.

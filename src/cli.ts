@@ -84,7 +84,7 @@ Commands:
   progress            Regenerate PROGRESS.md
   validate            Check structure and invariants
   search              Search project memory
-  bootstrap           Install AI adapter (claude|cursor)
+  bootstrap           Install AI adapter (claude|cursor|copilot)
   eval                Validate skill evals
   api                 List exports from src/ (--file, --kind filters)
   upgrade             Migrate .wdd/ schema to current version (--dry-run)
@@ -195,7 +195,7 @@ async function main(): Promise<void> {
     case "bootstrap": {
       const adapter = args[1];
       if (!adapter) {
-        throw new Error("Usage: wdd bootstrap <claude|cursor>");
+        throw new Error("Usage: wdd bootstrap <claude|cursor|copilot>");
       }
       await bootstrapAdapter(process.cwd(), adapter);
       break;

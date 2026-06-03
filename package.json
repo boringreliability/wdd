@@ -1,6 +1,6 @@
 {
   "name": "@boringreliability/wdd",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publishConfig": {
     "access": "public"
   },
@@ -38,7 +38,8 @@
     "tdd",
     "methodology",
     "claude",
-    "cursor"
+    "cursor",
+    "copilot"
   ],
   "author": "Dennis Schmock",
   "license": "MIT",
