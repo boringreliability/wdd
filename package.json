@@ -1,24 +1,46 @@
 {
-  "name": "wdd",
-  "version": "0.1.0",
+  "name": "@boringreliability/wdd",
+  "version": "0.2.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Ward-Driven Development — a control system for AI-assisted software construction",
   "type": "module",
   "bin": {
     "wdd": "./dist/cli.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boringreliability/wdd.git"
+  },
+  "homepage": "https://github.com/boringreliability/wdd#readme",
+  "bugs": {
+    "url": "https://github.com/boringreliability/wdd/issues"
+  },
   "scripts": {
     "build": "tsc",
     "test": "node --test --import tsx src/**/*.test.ts",
-    "dev": "tsx src/cli.ts"
+    "dev": "tsx src/cli.ts",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
     "wdd",
     "ward-driven-development",
     "ai",
     "tdd",
-    "methodology"
+    "methodology",
+    "claude",
+    "cursor"
   ],
-  "author": "Dennis",
+  "author": "Dennis Schmock",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^25.5.0",
