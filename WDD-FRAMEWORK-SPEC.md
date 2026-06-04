@@ -99,15 +99,16 @@ Every WDD artifact must be both human-readable (markdown) and machine-parseable 
 │   ├── review.md           # Review template
 │   ├── decision.md         # Decision record template
 │   └── integration.md      # Integration spec template
-└── adapters/               # Tool-specific bootstrap files
-    ├── claude.md            # Claude Code / CLAUDE.md rules
-    ├── cursor.md            # Cursor .cursorrules content
-    └── windsurf.md          # Windsurf rules content
 ```
+
+Adapters write to tool-native locations outside `.wdd/`:
+- Claude Code → `.claude/skills/{wdd,ward,ward-new}/SKILL.md` (3 skill dirs with eval files)
+- Cursor → `.cursor/rules/wdd.mdc` (always-applied rule)
+- GitHub Copilot → `.github/copilot-instructions.md` + `.github/prompts/*.prompt.md` + `.github/agents/wdd.agent.md`
 
 **Architecture layers:**
 - **Core WDD Protocol** → `.wdd/` files + conventions + CLI
-- **Adapters** → Tool-specific bootstrap files (Claude, Cursor, Windsurf, etc.)
+- **Adapters** → Tool-specific bootstrap files (Claude, Cursor, Copilot, etc.)
 
 Adapters are generated from core state, not hand-maintained. This separation protects against vendor drift.
 
@@ -584,8 +585,31 @@ Do not modify completed Wards without explicit human approval.
 
 For Cursor:
 ```markdown
-# .wdd/CURSOR.md (copied to .cursorrules)
-{Same content, adapted to Cursor's rules format}
+# .cursor/rules/wdd.mdc — always-applied rule
+---
+description: Ward-Driven Development workflow
+globs: "**/*"
+alwaysApply: true
+---
+{Same shared content as Claude skills, in Cursor's MDC format}
+```
+
+For GitHub Copilot:
+```markdown
+# .github/copilot-instructions.md — auto-loaded on every chat
+{Same shared content, plain Markdown, no frontmatter}
+
+# .github/prompts/{wdd,ward,ward-new}.prompt.md — /slash commands
+---
+description: '<one-line description>'
+---
+{Body reuses the equivalent Claude skill body}
+
+# .github/agents/wdd.agent.md — selectable persona
+---
+description: 'WDD discipline enforcer — halts at human approval gates'
+---
+{Condensed discipline-focused content}
 ```
 
 For other tools: the human pastes relevant context manually.
@@ -719,8 +743,8 @@ wdd search "display list"
 # → Returns matching decisions, learnings, and snapshots
 
 # Generate bootstrap file for specific tool
-wdd bootstrap claude|cursor|windsurf
-# → Generates tool-specific adapter file from current context
+wdd bootstrap claude|cursor|copilot
+# → Generates tool-specific adapter files from current context
 ```
 
 ### 10.2 Implementation Notes
@@ -847,7 +871,7 @@ If the CLI exists, any AI can `wdd session` and get full context.
 MLP command set (10 commands): init, ward create, ward status, ward reopen, complete, session, status, progress, validate, search.
 
 ### Phase 3: Adapter Generators
-`wdd bootstrap claude|cursor|windsurf` generates tool-specific rules files.
+`wdd bootstrap claude|cursor|copilot` generates tool-specific rules files.
 These are thin wrappers over the core protocol, not platforms.
 
 ### Phase 4: Claude Code Skill (Optional)

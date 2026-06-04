@@ -2,3 +2,9 @@ node_modules/
 dist/
 *.tgz
 .DS_Store
+
+# Personal Claude Code per-project settings (allowlists, dev paths).
+# The shared/version-controlled equivalent is .claude/settings.shared.json
+# if we ever introduce one.
+.claude/settings.json
+.claude/settings.local.json
