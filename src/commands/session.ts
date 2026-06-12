@@ -10,6 +10,11 @@ import {
 } from "./graph.js";
 import { parseBacklog, findStaleBacklogItems } from "../utils/backlog.js";
 import { type Clock, defaultClock } from "../utils/clock.js";
+import {
+  formatFrontmatterDisplayWardId,
+  frontmatterEpicForWard,
+  listWardFiles,
+} from "../utils/ward-id.js";
 
 export interface SessionOptions {
   clock?: Clock;
@@ -148,7 +153,7 @@ function renderCurrentWard(projectDir: string): string {
 }
 
 interface CurrentWard {
-  id: number;
+  id: string;
   name: string;
   content: string;
 }
@@ -157,18 +162,20 @@ function findCurrentWard(wddDir: string): CurrentWard | null {
   const wardsDir = path.join(wddDir, "wards");
   if (!fs.existsSync(wardsDir)) return null;
 
-  const files = fs
-    .readdirSync(wardsDir)
-    .filter((f) => /^ward-\d+\.md$/.test(f))
-    .sort();
+  const files = listWardFiles(wardsDir);
 
   for (const file of files) {
-    const content = fs.readFileSync(path.join(wardsDir, file), "utf-8");
+    const content = fs.readFileSync(file.filePath, "utf-8");
     const { frontmatter } = parseFrontmatter(content);
 
     if (frontmatter.status !== "complete") {
+      const epic = frontmatterEpicForWard(frontmatter, file);
       return {
-        id: frontmatter.ward as number,
+        id: formatFrontmatterDisplayWardId(
+          frontmatter.ward as number,
+          frontmatter.revision,
+          epic
+        ),
         name: frontmatter.name as string,
         content,
       };

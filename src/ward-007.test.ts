@@ -61,10 +61,9 @@ describe("Ward 007: Validate Command", () => {
 
   // Test 4: invalid ward status
   it("validate_invalid_ward_status", async () => {
-    await createWard(tmpDir, { name: "Bad Ward", epic: "core", layer: "rust", tests: 3 });
+    const wardPath = await createWard(tmpDir, { name: "Bad Ward", epic: "core", layer: "rust", tests: 3 });
 
     // Manually corrupt the status
-    const wardPath = path.join(tmpDir, ".wdd", "wards", "ward-001.md");
     const content = fs.readFileSync(wardPath, "utf-8");
     const { frontmatter, body } = parseFrontmatter(content);
     frontmatter.status = "invalid_status";
@@ -80,9 +79,8 @@ describe("Ward 007: Validate Command", () => {
 
   // Test 5: dependency references non-existent ward
   it("validate_missing_dependency", async () => {
-    await createWard(tmpDir, { name: "Dep Ward", epic: "core", layer: "rust", tests: 3 });
+    const wardPath = await createWard(tmpDir, { name: "Dep Ward", epic: "core", layer: "rust", tests: 3 });
 
-    const wardPath = path.join(tmpDir, ".wdd", "wards", "ward-001.md");
     const content = fs.readFileSync(wardPath, "utf-8");
     const { frontmatter, body } = parseFrontmatter(content);
     frontmatter.dependencies = [99];

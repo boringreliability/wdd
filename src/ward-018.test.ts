@@ -9,7 +9,7 @@ import {
   detectScanConfig,
   writeScanConfig,
 } from "./commands/configure.js";
-import { upgradeProject } from "./commands/upgrade.js";
+import { CURRENT_SCHEMA_VERSION, upgradeProject } from "./commands/upgrade.js";
 import { readConfig } from "./utils/config.js";
 
 let tmpDir: string;
@@ -443,7 +443,7 @@ describe("Ward 018: 1.1 → 1.2 migration", () => {
       wdd_version?: string;
     };
     assert.ok(afterFirst.scan, "Migration should add scan block");
-    assert.equal(afterFirst.wdd_version, "1.2");
+    assert.equal(afterFirst.wdd_version, CURRENT_SCHEMA_VERSION);
     assert.deepEqual(afterFirst.scan.roots, ["src/"], "Default roots");
     assert.ok(afterFirst.scan.extensions.includes(".ts"));
     assert.ok(afterFirst.scan.exclude.some((p) => p.includes("test")));

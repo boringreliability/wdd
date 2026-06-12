@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { serializeFrontmatter } from "../frontmatter.js";
-import { formatWardId, wardFilename } from "../utils/ward-id.js";
+import { formatFrontmatterWardId, formatWardId, wardFilename } from "../utils/ward-id.js";
 import { todayIso } from "../utils/config.js";
 import { WARD_BODY_TEMPLATE } from "../templates/ward-body.js";
 
@@ -23,9 +23,12 @@ export async function createWard(
     throw new Error("Ward epic is required.");
   }
 
-  const wardsDir = path.join(projectDir, ".wdd", "wards");
+  const wardsDir = path.join(projectDir, ".wdd", "wards", options.epic);
+  fs.mkdirSync(wardsDir, { recursive: true });
+
   const nextNumber = getNextWardNumber(wardsDir);
   const padded = formatWardId(nextNumber);
+  const scopedId = formatFrontmatterWardId(nextNumber, null, options.epic);
 
   const frontmatter: Record<string, unknown> = {
     ward: nextNumber,
@@ -40,14 +43,16 @@ export async function createWard(
     completed: null,
   };
 
-  const body = WARD_BODY_TEMPLATE.replace("{NNN}", padded).replace("{Name}", options.name);
+  const body = WARD_BODY_TEMPLATE
+    .replace("{NNN}", scopedId)
+    .replace("{Name}", options.name);
 
   const content = serializeFrontmatter(frontmatter, body);
   const filename = wardFilename(nextNumber);
   const filePath = path.join(wardsDir, filename);
 
   fs.writeFileSync(filePath, content);
-  console.log(`Created ${filename}: ${options.name}`);
+  console.log(`Created ${path.join(options.epic, filename)}: ${options.name}`);
 
   return filePath;
 }

@@ -158,8 +158,6 @@ _None_
           lint: "",
           format: "",
         },
-        ward_prefix: "ward",
-        ward_digits: 3,
       },
       null,
       2

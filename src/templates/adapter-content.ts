@@ -66,7 +66,8 @@ Do not claim Gold complete based on automated tests alone. The human must have *
 
 ## File Protocol
 
-- \`.wdd/wards/ward-NNN.md\` — Ward specs with YAML frontmatter (source of truth for status)
+- \`.wdd/epics/<slug>.md\` — Epic specs; epics are slug-named, not globally numbered
+- \`.wdd/wards/<epic-slug>/ward-NNN.md\` — Ward specs; canonical IDs are \`<epic-slug>-NNN\`, e.g. \`drive-polish-001\`
 - \`.wdd/CONTEXT.md\` — Living document, updated after each Ward (max 200 lines)
 - \`.wdd/PROJECT.md\` — Project identity and principles (rarely changes)
 - \`.wdd/PROGRESS.md\` — Auto-generated, never hand-edit
@@ -190,7 +191,7 @@ description: "Create a new WDD Ward with full spec, tests table, must-not/must-d
      - Steps: numbered copy-pasteable commands with expected outputs
      - Pass criteria: concrete observable checkboxes
    - Verification (how to prove it's done)
-4. Run \`wdd ward status <id> red\`
+4. Run \`wdd ward status <epic-slug>-NNN red\`, using the ID printed by \`wdd ward create\`
 5. Write the test file based on the Tests table
 6. Present tests to user
 7. ⏸️ **STOP — Wait for explicit approval before implementing**

@@ -3,6 +3,7 @@ import path from "node:path";
 import { parseFrontmatter } from "../frontmatter.js";
 import { isStatus } from "../utils/status.js";
 import { type Clock, defaultClock } from "../utils/clock.js";
+import { listWardFiles } from "../utils/ward-id.js";
 import {
   buildDependencyGraph,
   findOrphanedDependencies,
@@ -110,21 +111,21 @@ function validateWardFrontmatter(wddDir: string, errors: string[]): void {
   const wardsDir = path.join(wddDir, "wards");
   if (!fs.existsSync(wardsDir)) return;
 
-  const wardFiles = fs.readdirSync(wardsDir).filter((f) => f.endsWith(".md"));
+  const wardFiles = listWardFiles(wardsDir);
 
   for (const file of wardFiles) {
-    const content = fs.readFileSync(path.join(wardsDir, file), "utf-8");
+    const content = fs.readFileSync(file.filePath, "utf-8");
     const { frontmatter } = parseFrontmatter(content);
 
     for (const key of REQUIRED_FRONTMATTER_KEYS) {
       if (!(key in frontmatter)) {
-        errors.push(`${file}: missing required frontmatter key '${key}'`);
+        errors.push(`${file.relativePath}: missing required frontmatter key '${key}'`);
       }
     }
 
     const status = frontmatter.status;
     if (status !== undefined && status !== null && !isStatus(status)) {
-      errors.push(`${file}: invalid status '${status}'`);
+      errors.push(`${file.relativePath}: invalid status '${status}'`);
     }
   }
 }

@@ -9,7 +9,15 @@ import {
   isStatus,
   statusLabel,
 } from "../utils/status.js";
-import { formatWardId, wardFilename, parseWardId } from "../utils/ward-id.js";
+import {
+  formatFrontmatterDisplayWardId,
+  formatWardId,
+  frontmatterEpicForWard,
+  listWardFiles,
+  resolveWardFile,
+  parseWardId,
+  type WardFileEntry,
+} from "../utils/ward-id.js";
 import { readProjectName } from "../utils/config.js";
 
 export interface CompleteResult {
@@ -25,14 +33,8 @@ export async function completeWard(
     throw new Error(`Invalid ward id: ${wardId}`);
   }
 
-  const wardsDir = path.join(projectDir, ".wdd", "wards");
   const padded = formatWardId(parsed.num, parsed.revision);
-  const filename = wardFilename(parsed.num, parsed.revision);
-  const wardPath = path.join(wardsDir, filename);
-
-  if (!fs.existsSync(wardPath)) {
-    throw new Error(`Ward file not found: ${filename}`);
-  }
+  const wardPath = resolveWardFile(projectDir, wardId);
 
   const { frontmatter, body } = parseFrontmatter(fs.readFileSync(wardPath, "utf-8"));
 
@@ -48,9 +50,10 @@ export async function completeWard(
   if (fs.existsSync(contextPath)) {
     const snapshotDir = path.join(projectDir, ".wdd", "memory", "snapshots");
     fs.mkdirSync(snapshotDir, { recursive: true });
-    const snapshotPath = path.join(snapshotDir, `ward-${padded}-complete.md`);
+    const snapshotBase = parsed.epic ? `${parsed.epic}-${padded}` : padded;
+    const snapshotPath = path.join(snapshotDir, `ward-${snapshotBase}-complete.md`);
     fs.writeFileSync(snapshotPath, fs.readFileSync(contextPath, "utf-8"));
-    steps.push(`Snapshot CONTEXT.md → memory/snapshots/ward-${padded}-complete.md`);
+    steps.push(`Snapshot CONTEXT.md → memory/snapshots/ward-${snapshotBase}-complete.md`);
   } else {
     steps.push("Snapshot skipped — CONTEXT.md not found");
   }
@@ -94,14 +97,14 @@ interface WardInfo {
   completed: string | null;
 }
 
-function readWardInfo(filePath: string): WardInfo {
-  const { frontmatter } = parseFrontmatter(fs.readFileSync(filePath, "utf-8"));
+function readWardInfo(file: WardFileEntry): WardInfo {
+  const { frontmatter } = parseFrontmatter(fs.readFileSync(file.filePath, "utf-8"));
   const num = frontmatter.ward as number;
-  const revision = (frontmatter.revision as string | null) ?? null;
   const rawStatus = frontmatter.status as string;
+  const epic = frontmatterEpicForWard(frontmatter, file);
 
   return {
-    id: formatWardId(num, revision),
+    id: formatFrontmatterDisplayWardId(num, frontmatter.revision, epic),
     name: (frontmatter.name as string) ?? "",
     tests: (frontmatter.estimated_tests as number) ?? 0,
     status: isStatus(rawStatus) ? rawStatus : "planned",
@@ -115,11 +118,7 @@ export function regenerateProgress(projectDir: string): string {
     return "# Progress\n\nNo wards found.\n";
   }
 
-  const wards = fs
-    .readdirSync(wardsDir)
-    .filter((f) => f.endsWith(".md"))
-    .sort()
-    .map((f) => readWardInfo(path.join(wardsDir, f)));
+  const wards = listWardFiles(wardsDir).map(readWardInfo);
 
   const completeCount = wards.filter((w) => w.status === "complete").length;
   const totalTests = wards.reduce((sum, w) => sum + w.tests, 0);

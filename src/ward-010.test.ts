@@ -49,21 +49,21 @@ describe("Ward 010: Epic Create Command", () => {
     cleanup(tmpDir);
   });
 
-  // Test 1: creates 01-core.md when no epics exist
+  // Test 1: creates slug-only epic file when no epics exist
   it("create_epic_first", async () => {
     await createEpic(tmpDir, { name: "Core Engine", slug: "core" });
 
-    const epicPath = path.join(tmpDir, ".wdd", "epics", "01-core.md");
-    assert.ok(fs.existsSync(epicPath), "01-core.md should exist");
+    const epicPath = path.join(tmpDir, ".wdd", "epics", "core.md");
+    assert.ok(fs.existsSync(epicPath), "core.md should exist");
   });
 
-  // Test 2: creates 02-ui.md when 01 exists
-  it("create_epic_sequential", async () => {
+  // Test 2: creates another slug-only epic without a global sequence
+  it("create_epic_slug_only", async () => {
     await createEpic(tmpDir, { name: "Core", slug: "core" });
     await createEpic(tmpDir, { name: "UI Layer", slug: "ui" });
 
-    const epicPath = path.join(tmpDir, ".wdd", "epics", "02-ui.md");
-    assert.ok(fs.existsSync(epicPath), "02-ui.md should exist");
+    const epicPath = path.join(tmpDir, ".wdd", "epics", "ui.md");
+    assert.ok(fs.existsSync(epicPath), "ui.md should exist");
   });
 
   // Test 3: frontmatter has correct values
@@ -71,14 +71,14 @@ describe("Ward 010: Epic Create Command", () => {
     await createEpic(tmpDir, { name: "Rendering Pipeline", slug: "rendering" });
 
     const content = fs.readFileSync(
-      path.join(tmpDir, ".wdd", "epics", "01-rendering.md"),
+      path.join(tmpDir, ".wdd", "epics", "rendering.md"),
       "utf-8"
     );
     const { frontmatter } = parseFrontmatter(content);
 
     assert.equal(frontmatter.epic, "rendering");
     assert.equal(frontmatter.name, "Rendering Pipeline");
-    assert.equal(frontmatter.number, 1);
+    assert.ok(!("number" in frontmatter), "Epic frontmatter should not be globally numbered");
     assert.equal(frontmatter.status, "active");
   });
 
@@ -87,7 +87,7 @@ describe("Ward 010: Epic Create Command", () => {
     await createEpic(tmpDir, { name: "Hit Testing", slug: "hit-test" });
 
     const content = fs.readFileSync(
-      path.join(tmpDir, ".wdd", "epics", "01-hit-test.md"),
+      path.join(tmpDir, ".wdd", "epics", "hit-test.md"),
       "utf-8"
     );
     const { body } = parseFrontmatter(content);
@@ -125,6 +125,6 @@ describe("Ward 010: Epic Create Command", () => {
       tmpDir
     );
     assert.equal(code, 0);
-    assert.ok(fs.existsSync(path.join(tmpDir, ".wdd", "epics", "01-my-epic.md")));
+    assert.ok(fs.existsSync(path.join(tmpDir, ".wdd", "epics", "my-epic.md")));
   });
 });

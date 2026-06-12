@@ -20,7 +20,7 @@ function cleanup(dir: string): void {
 
 function readWard(dir: string, filename: string) {
   const content = fs.readFileSync(
-    path.join(dir, ".wdd", "wards", filename),
+    path.join(dir, ".wdd", "wards", "core", filename),
     "utf-8"
   );
   return parseFrontmatter(content);

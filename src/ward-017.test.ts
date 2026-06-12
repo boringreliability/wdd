@@ -104,6 +104,7 @@ describe("Ward 017: upgrade orchestrator", () => {
     const projectPath = path.join(tmpDir, ".wdd", "PROJECT.md");
     const contextPath = path.join(tmpDir, ".wdd", "CONTEXT.md");
     const wardPath = path.join(tmpDir, ".wdd", "wards", "ward-001.md");
+    const migratedWardPath = path.join(tmpDir, ".wdd", "wards", "core", "ward-001.md");
 
     fs.writeFileSync(projectPath, "# Custom Project\n\nUSER_PROJECT_MARKER");
     fs.writeFileSync(contextPath, "# Custom Context\n\nUSER_CONTEXT_MARKER");
@@ -123,8 +124,8 @@ describe("Ward 017: upgrade orchestrator", () => {
       "CONTEXT.md must be untouched"
     );
     assert.ok(
-      fs.readFileSync(wardPath, "utf-8").includes("USER_WARD_MARKER"),
-      "Existing ward file must be untouched"
+      fs.readFileSync(migratedWardPath, "utf-8").includes("USER_WARD_MARKER"),
+      "Existing ward content must be preserved across scoped-file migration"
     );
   });
 

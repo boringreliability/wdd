@@ -75,7 +75,7 @@ Usage: wdd <command> [options]
 Commands:
   init                Initialize WDD in a project
   ward create         Create a new Ward
-  ward status         Update Ward status
+  ward status         Update Ward status (IDs look like core-001)
   ward reopen         Reopen a completed Ward
   complete            Complete a Ward (step-by-step)
   epic create         Create a new Epic
@@ -126,7 +126,7 @@ async function handleWard(): Promise<void> {
       const wardId = positional[0];
       const newStatus = positional[1];
       if (!wardId || !newStatus) {
-        throw new Error("Usage: wdd ward status <id> <new-status> [--feedback <text>]");
+        throw new Error("Usage: wdd ward status <epic-slug>-NNN <new-status> [--feedback <text>]");
       }
       const feedback = getFlag("feedback");
       await updateWardStatus(process.cwd(), wardId, newStatus, feedback);
@@ -136,7 +136,7 @@ async function handleWard(): Promise<void> {
       const positional = getPositional(2);
       const wardId = positional[0];
       if (!wardId) {
-        throw new Error("Usage: wdd ward reopen <id> --reason <text>");
+        throw new Error("Usage: wdd ward reopen <epic-slug>-NNN --reason <text>");
       }
       const reason = getFlag("reason");
       if (!reason) {
@@ -274,7 +274,7 @@ async function main(): Promise<void> {
       const positional = getPositional(1);
       const wardId = positional[0];
       if (!wardId) {
-        throw new Error("Usage: wdd complete <ward-id>");
+        throw new Error("Usage: wdd complete <epic-slug>-NNN");
       }
       await completeWard(process.cwd(), wardId);
       break;

@@ -74,15 +74,18 @@ Every WDD artifact must be both human-readable (markdown) and machine-parseable 
 ├── PROGRESS.md             # Auto-generated progress dashboard (never hand-edit)
 ├── config.json             # Minimal project config
 ├── epics/
-│   ├── 01-core.md          # Epic grouping related Wards
-│   ├── 02-verticals.md
-│   └── 03-integration.md
+│   ├── core.md             # Epic grouping related Wards
+│   ├── verticals.md
+│   └── integration.md
 ├── wards/
-│   ├── ward-001.md         # Individual Ward specs (with YAML frontmatter)
-│   ├── ward-002.md
-│   └── ...
+│   ├── core/
+│   │   ├── ward-001.md     # Canonical ID: core-001
+│   │   └── ward-002.md
+│   ├── verticals/
+│   │   └── ward-001.md     # Canonical ID: verticals-001
+│   └── integration/
 ├── reviews/
-│   ├── ward-001-review.md  # Multi-AI review notes per Ward
+│   ├── core-001-review.md  # Multi-AI review notes per Ward
 │   └── ...
 ├── memory/                 # Long-term project memory (Saga-inspired)
 │   ├── decisions/          # Architectural decisions with rationale

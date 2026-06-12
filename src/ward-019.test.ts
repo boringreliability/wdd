@@ -27,6 +27,7 @@ import {
   SECTION_HANDLERS,
 } from "./commands/session.js";
 import { validateProject } from "./commands/validate.js";
+import { regenerateProgress } from "./commands/ward-complete.js";
 
 let tmpDir: string;
 
@@ -40,7 +41,7 @@ function cleanup(dir: string): void {
 
 interface WardFixture {
   ward: number;
-  revision?: string;
+  revision?: string | number | null;
   name: string;
   status: "planned" | "red" | "approved" | "gold" | "complete" | "blocked";
   dependencies?: (number | string)[];
@@ -50,7 +51,10 @@ interface WardFixture {
 
 function writeWard(dir: string, w: WardFixture): void {
   const num = String(w.ward).padStart(3, "0");
-  const filename = w.revision ? `ward-${num}${w.revision}.md` : `ward-${num}.md`;
+  const revisionSuffix = typeof w.revision === "string" && /^[a-z]$/.test(w.revision)
+    ? w.revision
+    : "";
+  const filename = `ward-${num}${revisionSuffix}.md`;
 
   const depList = (w.dependencies ?? [])
     .map((d) => (typeof d === "string" ? `"${d}"` : String(d)))
@@ -58,7 +62,7 @@ function writeWard(dir: string, w: WardFixture): void {
 
   const content = `---
 ward: ${w.ward}
-revision: ${w.revision ? `"${w.revision}"` : "null"}
+revision: ${typeof w.revision === "string" ? `"${w.revision}"` : w.revision ?? "null"}
 name: "${w.name}"
 epic: "${w.epic ?? "test"}"
 status: "${w.status}"
@@ -68,7 +72,7 @@ estimated_tests: 0
 created: "2026-05-16"
 completed: ${w.status === "complete" ? `"2026-05-16"` : "null"}
 ---
-# Ward ${num}${w.revision ?? ""}: ${w.name}
+# Ward ${num}${revisionSuffix}: ${w.name}
 
 ${w.body ?? "## Scope\nTest fixture"}
 `;
@@ -256,6 +260,38 @@ describe("Ward 019: revision ward semantics", () => {
       readyIds.includes("5"),
       "Ward 5 itself should be ready (no deps, status planned)"
     );
+  });
+
+  // Test 6d
+  it("numeric_frontmatter_revision_is_not_part_of_ward_id", () => {
+    writeWard(tmpDir, { ward: 28, revision: 3, name: "Tokens", status: "complete" });
+    writeWard(tmpDir, {
+      ward: 30,
+      revision: 4,
+      name: "Sample Data",
+      status: "complete",
+      dependencies: [28],
+    });
+
+    const graph = buildDependencyGraph(tmpDir);
+
+    assert.ok(graph.get("28"), "Ward 28 node exists without numeric revision suffix");
+    assert.ok(graph.get("30"), "Ward 30 node exists without numeric revision suffix");
+    assert.equal(graph.get("304"), undefined, "Numeric spec revision must not create Ward 304");
+    assert.deepEqual(graph.get("30")!.dependencies, ["28"]);
+    assert.deepEqual(findOrphanedDependencies(graph), []);
+
+    const validation = validateProject(tmpDir);
+    assert.ok(
+      !validation.warnings.some((warning) => warning.includes("depends on ward 28 which does not exist")),
+      `Validate should not warn about existing dependency 28. Got: ${validation.warnings.join("\n")}`
+    );
+
+    const progress = regenerateProgress(tmpDir);
+    assert.ok(progress.includes("| 028 | Tokens |"), "Progress should display Ward 28 as 028");
+    assert.ok(progress.includes("| 030 | Sample Data |"), "Progress should display Ward 30 as 030");
+    assert.ok(!progress.includes("| 0283 |"), "Progress must not append numeric spec revision");
+    assert.ok(!progress.includes("| 0304 |"), "Progress must not append numeric spec revision");
   });
 });
 

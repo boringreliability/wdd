@@ -21,16 +21,18 @@ function cleanup(dir: string): void {
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
-async function createWardInGold(dir: string, name: string): Promise<number> {
+const CORE_WARD_ID = "core-001";
+
+function coreWardPath(dir: string, revision = ""): string {
+  return path.join(dir, ".wdd", "wards", "core", `ward-001${revision}.md`);
+}
+
+async function createWardInGold(dir: string, name: string): Promise<string> {
   await createWard(dir, { name, epic: "core", layer: "typescript", tests: 3 });
-  const num = fs
-    .readdirSync(path.join(dir, ".wdd", "wards"))
-    .filter((f) => /^ward-\d+\.md$/.test(f))
-    .length;
-  await updateWardStatus(dir, num, "red");
-  await updateWardStatus(dir, num, "approved");
-  await updateWardStatus(dir, num, "gold");
-  return num;
+  await updateWardStatus(dir, CORE_WARD_ID, "red");
+  await updateWardStatus(dir, CORE_WARD_ID, "approved");
+  await updateWardStatus(dir, CORE_WARD_ID, "gold");
+  return CORE_WARD_ID;
 }
 
 describe("Ward 015: Manual Smoke Test in Templates", () => {
@@ -45,14 +47,13 @@ describe("Ward 015: Manual Smoke Test in Templates", () => {
 
   // Test 1: New ward files contain Manual Smoke Test section
   it("create_ward_has_smoke_test_section", async () => {
-    await createWard(tmpDir, {
+    const wardPath = await createWard(tmpDir, {
       name: "Some Feature",
       epic: "core",
       layer: "typescript",
       tests: 5,
     });
 
-    const wardPath = path.join(tmpDir, ".wdd", "wards", "ward-001.md");
     const content = fs.readFileSync(wardPath, "utf-8");
     const { body } = parseFrontmatter(content);
 
@@ -201,15 +202,10 @@ describe("Ward 015: complete prints smoke test", () => {
 
   // Test 6: completeWard output includes smoke test when section is present
   it("complete_prints_smoke_test", async () => {
-    const num = await createWardInGold(tmpDir, "Smoke Demo Ward");
+    const wardId = await createWardInGold(tmpDir, "Smoke Demo Ward");
 
     // Replace the placeholder smoke test with identifiable content
-    const wardPath = path.join(
-      tmpDir,
-      ".wdd",
-      "wards",
-      `ward-${String(num).padStart(3, "0")}.md`
-    );
+    const wardPath = coreWardPath(tmpDir);
     const content = fs.readFileSync(wardPath, "utf-8");
     const { frontmatter, body } = parseFrontmatter(content);
 
@@ -231,7 +227,7 @@ SMOKE_SETUP_MARKER
       serializeFrontmatter(frontmatter as Record<string, unknown>, customBody)
     );
 
-    const result = await completeWard(tmpDir, num);
+    const result = await completeWard(tmpDir, wardId);
 
     const smokeStep = result.steps.find((s) =>
       s.includes("Manual Smoke Test")
@@ -286,15 +282,10 @@ SMOKE_SETUP_MARKER
 
   // Test 7: legacy ward without smoke test section still completes
   it("complete_handles_no_smoke_test", async () => {
-    const num = await createWardInGold(tmpDir, "Legacy Ward");
+    const wardId = await createWardInGold(tmpDir, "Legacy Ward");
 
     // Strip the Manual Smoke Test section to simulate a legacy ward
-    const wardPath = path.join(
-      tmpDir,
-      ".wdd",
-      "wards",
-      `ward-${String(num).padStart(3, "0")}.md`
-    );
+    const wardPath = coreWardPath(tmpDir);
     const content = fs.readFileSync(wardPath, "utf-8");
     const { frontmatter, body } = parseFrontmatter(content);
 
@@ -308,7 +299,7 @@ SMOKE_SETUP_MARKER
     );
 
     // Should not throw — legacy compatibility
-    const result = await completeWard(tmpDir, num);
+    const result = await completeWard(tmpDir, wardId);
 
     // Existing reminders (commit, CONTEXT.md) should still be present
     assert.ok(

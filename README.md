@@ -38,15 +38,19 @@ mkdir my-project && cd my-project
 wdd init --name "my-project"
 wdd epic create "Core" --slug core
 wdd ward create "First feature" --epic core --tests 3
-wdd ward status 1 red
-wdd ward status 1 red_approved
-wdd ward status 1 gold
-wdd ward status 1 gold_approved
-wdd complete 1
+wdd ward status core-001 red
+wdd ward status core-001 red_approved
+wdd ward status core-001 gold
+wdd ward status core-001 gold_approved
+wdd complete core-001
 ```
 
 State lives in `.wdd/`. Every transition writes a markdown file you can read,
 diff, and grep.
+
+Ward IDs are scoped by epic slug. The first Ward in `core` is `core-001`, and
+the first Ward in another epic can also be `001` without conflicting on a
+parallel branch.
 
 ## Commands
 

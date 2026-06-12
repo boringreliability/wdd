@@ -2,6 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { parseFrontmatter } from "../frontmatter.js";
 import { STATUS_SYMBOLS, type Status } from "../utils/status.js";
+import {
+  formatFrontmatterWardId,
+  frontmatterEpicForWard,
+  listWardFiles,
+  parseWardId,
+  resolveWardFile,
+} from "../utils/ward-id.js";
 
 export type WardId = string;
 
@@ -20,29 +27,42 @@ export interface Cycle {
 }
 
 /**
- * Canonical sort: numeric prefix asc, then revision suffix asc.
- * `"5" < "5b" < "10" < "100"`.
+ * Canonical sort: epic slug asc, local numeric prefix asc, then revision suffix asc.
+ * Legacy IDs without an epic sort before scoped IDs with the same local number.
  */
 export function compareWardId(a: WardId, b: WardId): number {
-  const aMatch = a.match(/^(\d+)([a-z]?)$/);
-  const bMatch = b.match(/^(\d+)([a-z]?)$/);
+  const aMatch = a.match(/^(?:(.*)-)?(\d+)([a-z]?)$/);
+  const bMatch = b.match(/^(?:(.*)-)?(\d+)([a-z]?)$/);
   if (!aMatch || !bMatch) return a.localeCompare(b);
 
-  const aNum = parseInt(aMatch[1], 10);
-  const bNum = parseInt(bMatch[1], 10);
+  const epicCompare = (aMatch[1] ?? "").localeCompare(bMatch[1] ?? "");
+  if (epicCompare !== 0) return epicCompare;
+
+  const aNum = parseInt(aMatch[2], 10);
+  const bNum = parseInt(bMatch[2], 10);
   if (aNum !== bNum) return aNum - bNum;
 
-  return aMatch[2].localeCompare(bMatch[2]);
+  return aMatch[3].localeCompare(bMatch[3]);
 }
 
-function normalizeWardId(value: unknown): WardId {
+function normalizeWardId(value: unknown, currentEpic: string | null): WardId {
+  if (typeof value === "number" && currentEpic) {
+    return formatFrontmatterWardId(value, null, currentEpic);
+  }
+
+  const parsed = typeof value === "string" ? parseWardId(value) : null;
+  if (parsed && !parsed.epic && currentEpic) {
+    return formatFrontmatterWardId(parsed.num, parsed.revision, currentEpic);
+  }
+
   return String(value);
 }
 
 function formatForDisplay(id: WardId): string {
-  const match = id.match(/^(\d+)([a-z]?)$/);
+  const match = id.match(/^(?:(.*)-)?(\d+)([a-z]?)$/);
   if (!match) return id;
-  return match[1].padStart(3, "0") + match[2];
+  const localId = match[2].padStart(3, "0") + match[3];
+  return match[1] ? `${match[1]}-${localId}` : localId;
 }
 
 export function buildDependencyGraph(projectDir: string): WardGraph {
@@ -51,19 +71,19 @@ export function buildDependencyGraph(projectDir: string): WardGraph {
 
   if (!fs.existsSync(wardsDir)) return graph;
 
-  const files = fs.readdirSync(wardsDir).filter((f) => /^ward-.+\.md$/.test(f));
+  const files = listWardFiles(wardsDir);
 
   // First pass: create all nodes (without dependents)
   for (const file of files) {
-    const content = fs.readFileSync(path.join(wardsDir, file), "utf-8");
+    const content = fs.readFileSync(file.filePath, "utf-8");
     const { frontmatter } = parseFrontmatter(content);
 
     const ward = frontmatter.ward as number;
-    const revision = (frontmatter.revision as string | null) ?? null;
-    const id: WardId = revision ? `${ward}${revision}` : String(ward);
+    const epic = frontmatterEpicForWard(frontmatter, file);
+    const id: WardId = formatFrontmatterWardId(ward, frontmatter.revision, epic);
 
     const rawDeps = (frontmatter.dependencies as Array<number | string> | undefined) ?? [];
-    const dependencies = rawDeps.map(normalizeWardId);
+    const dependencies = rawDeps.map((dependency) => normalizeWardId(dependency, epic));
 
     graph.set(id, {
       id,
@@ -319,8 +339,7 @@ export function getWardBodies(
   for (const node of graph.values()) {
     if (!predicate(node)) continue;
 
-    const filename = idToFilename(node.id);
-    const filePath = path.join(wardsDir, filename);
+    const filePath = resolveWardFile(projectDir, node.id);
     if (!fs.existsSync(filePath)) continue;
 
     const { body } = parseFrontmatter(fs.readFileSync(filePath, "utf-8"));
@@ -329,8 +348,4 @@ export function getWardBodies(
   return bodies;
 }
 
-function idToFilename(id: WardId): string {
-  const match = id.match(/^(\d+)([a-z]?)$/);
-  if (!match) return `ward-${id}.md`;
-  return `ward-${match[1].padStart(3, "0")}${match[2]}.md`;
-}
+export { formatForDisplay as formatWardIdForDisplay };

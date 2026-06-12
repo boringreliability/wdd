@@ -11,6 +11,11 @@ const execFileAsync = promisify(execFile);
 
 const CLI = path.join(import.meta.dirname, "cli.ts");
 let tmpDir: string;
+const CORE_WARD_ID = "core-001";
+
+function coreWardPath(dir: string, revision = ""): string {
+  return path.join(dir, ".wdd", "wards", "core", `ward-001${revision}.md`);
+}
 
 function setup(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), "wdd-test-"));
@@ -65,18 +70,18 @@ describe("Ward 006: CLI Wiring", () => {
       tmpDir
     );
     assert.equal(code, 0);
-    assert.ok(fs.existsSync(path.join(tmpDir, ".wdd", "wards", "ward-001.md")));
+    assert.ok(fs.existsSync(coreWardPath(tmpDir)));
   });
 
   // Test 3: wdd ward status
   it("cli_ward_status", async () => {
     await run(["init", "--name", "test"], tmpDir);
     await run(["ward", "create", "My Ward", "--epic", "core"], tmpDir);
-    const { code } = await run(["ward", "status", "1", "red"], tmpDir);
+    const { code } = await run(["ward", "status", CORE_WARD_ID, "red"], tmpDir);
     assert.equal(code, 0);
 
     const content = fs.readFileSync(
-      path.join(tmpDir, ".wdd", "wards", "ward-001.md"),
+      coreWardPath(tmpDir),
       "utf-8"
     );
     const { frontmatter } = parseFrontmatter(content);
@@ -87,32 +92,32 @@ describe("Ward 006: CLI Wiring", () => {
   it("cli_ward_reopen", async () => {
     await run(["init", "--name", "test"], tmpDir);
     await run(["ward", "create", "My Ward", "--epic", "core"], tmpDir);
-    await run(["ward", "status", "1", "red"], tmpDir);
-    await run(["ward", "status", "1", "approved"], tmpDir);
-    await run(["ward", "status", "1", "gold"], tmpDir);
-    await run(["ward", "status", "1", "complete"], tmpDir);
+    await run(["ward", "status", CORE_WARD_ID, "red"], tmpDir);
+    await run(["ward", "status", CORE_WARD_ID, "approved"], tmpDir);
+    await run(["ward", "status", CORE_WARD_ID, "gold"], tmpDir);
+    await run(["ward", "status", CORE_WARD_ID, "complete"], tmpDir);
 
     const { code } = await run(
-      ["ward", "reopen", "1", "--reason", "boundary bug"],
+      ["ward", "reopen", CORE_WARD_ID, "--reason", "boundary bug"],
       tmpDir
     );
     assert.equal(code, 0);
-    assert.ok(fs.existsSync(path.join(tmpDir, ".wdd", "wards", "ward-001b.md")));
+    assert.ok(fs.existsSync(coreWardPath(tmpDir, "b")));
   });
 
   // Test 5: wdd complete
   it("cli_complete", async () => {
     await run(["init", "--name", "test"], tmpDir);
     await run(["ward", "create", "My Ward", "--epic", "core"], tmpDir);
-    await run(["ward", "status", "1", "red"], tmpDir);
-    await run(["ward", "status", "1", "approved"], tmpDir);
-    await run(["ward", "status", "1", "gold"], tmpDir);
+    await run(["ward", "status", CORE_WARD_ID, "red"], tmpDir);
+    await run(["ward", "status", CORE_WARD_ID, "approved"], tmpDir);
+    await run(["ward", "status", CORE_WARD_ID, "gold"], tmpDir);
 
-    const { code } = await run(["complete", "1"], tmpDir);
+    const { code } = await run(["complete", CORE_WARD_ID], tmpDir);
     assert.equal(code, 0);
 
     const content = fs.readFileSync(
-      path.join(tmpDir, ".wdd", "wards", "ward-001.md"),
+      coreWardPath(tmpDir),
       "utf-8"
     );
     const { frontmatter } = parseFrontmatter(content);

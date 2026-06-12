@@ -18,15 +18,14 @@ function cleanup(dir: string): void {
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
-async function createWardInGold(dir: string, name: string): Promise<number> {
+const CORE_WARD_ID = "core-001";
+
+async function createWardInGold(dir: string, name: string): Promise<string> {
   await createWard(dir, { name, epic: "core", layer: "typescript", tests: 5 });
-  const files = fs.readdirSync(path.join(dir, ".wdd", "wards"))
-    .filter((f) => /^ward-\d+\.md$/.test(f));
-  const num = files.length;
-  await updateWardStatus(dir, num, "red");
-  await updateWardStatus(dir, num, "approved");
-  await updateWardStatus(dir, num, "gold");
-  return num;
+  await updateWardStatus(dir, CORE_WARD_ID, "red");
+  await updateWardStatus(dir, CORE_WARD_ID, "approved");
+  await updateWardStatus(dir, CORE_WARD_ID, "gold");
+  return CORE_WARD_ID;
 }
 
 describe("Ward 009: Complete Output Enhancements", () => {
@@ -41,8 +40,8 @@ describe("Ward 009: Complete Output Enhancements", () => {
 
   // Test 1: commit reminder present
   it("complete_commit_reminder", async () => {
-    const num = await createWardInGold(tmpDir, "Auth Module");
-    const result = await completeWard(tmpDir, num);
+    const wardId = await createWardInGold(tmpDir, "Auth Module");
+    const result = await completeWard(tmpDir, wardId);
 
     assert.ok(
       result.steps.some((s) => s.includes("git") && s.includes("commit")),
@@ -52,8 +51,8 @@ describe("Ward 009: Complete Output Enhancements", () => {
 
   // Test 2: CONTEXT.md reminder present
   it("complete_context_reminder", async () => {
-    const num = await createWardInGold(tmpDir, "Auth Module");
-    const result = await completeWard(tmpDir, num);
+    const wardId = await createWardInGold(tmpDir, "Auth Module");
+    const result = await completeWard(tmpDir, wardId);
 
     assert.ok(
       result.steps.some((s) => s.includes("CONTEXT.md")),
@@ -63,8 +62,8 @@ describe("Ward 009: Complete Output Enhancements", () => {
 
   // Test 3: commit message includes ward name
   it("complete_commit_has_ward_name", async () => {
-    const num = await createWardInGold(tmpDir, "Spatial Index");
-    const result = await completeWard(tmpDir, num);
+    const wardId = await createWardInGold(tmpDir, "Spatial Index");
+    const result = await completeWard(tmpDir, wardId);
 
     const commitStep = result.steps.find((s) => s.includes("commit"));
     assert.ok(commitStep, "Should have commit step");
@@ -76,21 +75,21 @@ describe("Ward 009: Complete Output Enhancements", () => {
 
   // Test 4: commit message includes ward number
   it("complete_commit_has_ward_number", async () => {
-    const num = await createWardInGold(tmpDir, "Auth Module");
-    const result = await completeWard(tmpDir, num);
+    const wardId = await createWardInGold(tmpDir, "Auth Module");
+    const result = await completeWard(tmpDir, wardId);
 
     const commitStep = result.steps.find((s) => s.includes("commit"));
     assert.ok(commitStep, "Should have commit step");
     assert.ok(
-      commitStep!.includes(String(num)),
+      commitStep!.includes(wardId),
       `Commit should include ward number: ${commitStep}`
     );
   });
 
   // Test 5: CONTEXT.md reminder mentions validate
   it("complete_context_has_validate", async () => {
-    const num = await createWardInGold(tmpDir, "Auth Module");
-    const result = await completeWard(tmpDir, num);
+    const wardId = await createWardInGold(tmpDir, "Auth Module");
+    const result = await completeWard(tmpDir, wardId);
 
     const contextStep = result.steps.find(
       (s) => s.includes("CONTEXT.md") && s.includes("validate")

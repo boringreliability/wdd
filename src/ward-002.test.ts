@@ -9,6 +9,10 @@ import { parseFrontmatter } from "./frontmatter.js";
 
 let tmpDir: string;
 
+function wardPath(dir: string, epic: string, filename: string): string {
+  return path.join(dir, ".wdd", "wards", epic, filename);
+}
+
 function setup(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), "wdd-test-"));
 }
@@ -36,8 +40,7 @@ describe("Ward 002: Ward Creation", () => {
       tests: 8,
     });
 
-    const wardPath = path.join(tmpDir, ".wdd", "wards", "ward-001.md");
-    assert.ok(fs.existsSync(wardPath), "ward-001.md should exist");
+    assert.ok(fs.existsSync(wardPath(tmpDir, "core", "ward-001.md")), "core/ward-001.md should exist");
   });
 
   // Test 2: creates ward-002.md when ward-001 exists
@@ -55,8 +58,7 @@ describe("Ward 002: Ward Creation", () => {
       tests: 10,
     });
 
-    const wardPath = path.join(tmpDir, ".wdd", "wards", "ward-002.md");
-    assert.ok(fs.existsSync(wardPath), "ward-002.md should exist");
+    assert.ok(fs.existsSync(wardPath(tmpDir, "core", "ward-002.md")), "core/ward-002.md should exist");
   });
 
   // Test 3: frontmatter has correct values
@@ -69,7 +71,7 @@ describe("Ward 002: Ward Creation", () => {
     });
 
     const content = fs.readFileSync(
-      path.join(tmpDir, ".wdd", "wards", "ward-001.md"),
+      wardPath(tmpDir, "engine", "ward-001.md"),
       "utf-8"
     );
     const { frontmatter } = parseFrontmatter(content);
@@ -95,13 +97,13 @@ describe("Ward 002: Ward Creation", () => {
     });
 
     const content = fs.readFileSync(
-      path.join(tmpDir, ".wdd", "wards", "ward-001.md"),
+      wardPath(tmpDir, "core", "ward-001.md"),
       "utf-8"
     );
     const { body } = parseFrontmatter(content);
 
     assert.ok(
-      body.includes("# Ward 001: Hit Testing"),
+      body.includes("# Ward core-001: Hit Testing"),
       `Body should contain heading, got: ${body.slice(0, 100)}`
     );
   });
@@ -114,7 +116,7 @@ describe("Ward 002: Ward Creation", () => {
     });
 
     const content = fs.readFileSync(
-      path.join(tmpDir, ".wdd", "wards", "ward-001.md"),
+      wardPath(tmpDir, "core", "ward-001.md"),
       "utf-8"
     );
     const { frontmatter } = parseFrontmatter(content);
@@ -160,7 +162,7 @@ describe("Ward 002: Ward Creation", () => {
 
     // Simulate a reopened ward-001b.md
     fs.writeFileSync(
-      path.join(tmpDir, ".wdd", "wards", "ward-001b.md"),
+      wardPath(tmpDir, "core", "ward-001b.md"),
       `---
 ward: 1
 revision: "b"
@@ -180,7 +182,9 @@ completed: null
     // Next ward should be 3, not 4
     await createWard(tmpDir, { name: "Ward Three", epic: "core", layer: "rust", tests: 8 });
 
-    const wardPath = path.join(tmpDir, ".wdd", "wards", "ward-003.md");
-    assert.ok(fs.existsSync(wardPath), "ward-003.md should exist (not ward-004)");
+    assert.ok(
+      fs.existsSync(wardPath(tmpDir, "core", "ward-003.md")),
+      "core/ward-003.md should exist (not ward-004)"
+    );
   });
 });

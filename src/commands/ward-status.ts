@@ -1,8 +1,7 @@
 import fs from "node:fs";
-import path from "node:path";
 import { parseFrontmatter, serializeFrontmatter } from "../frontmatter.js";
 import { type Status, VALID_TRANSITIONS } from "../utils/status.js";
-import { wardFilename, parseWardId } from "../utils/ward-id.js";
+import { resolveWardFile } from "../utils/ward-id.js";
 import { todayIso } from "../utils/config.js";
 
 export async function updateWardStatus(
@@ -47,18 +46,3 @@ export async function updateWardStatus(
   console.log(`Ward ${wardId}: ${currentStatus} → ${target}`);
 }
 
-function resolveWardFile(projectDir: string, wardId: number | string): string {
-  const parsed = parseWardId(wardId);
-  if (!parsed) {
-    throw new Error(`Invalid ward id: ${wardId}`);
-  }
-
-  const filename = wardFilename(parsed.num, parsed.revision);
-  const filePath = path.join(projectDir, ".wdd", "wards", filename);
-
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Ward file not found: ${filename}`);
-  }
-
-  return filePath;
-}

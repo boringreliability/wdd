@@ -19,15 +19,18 @@ function cleanup(dir: string): void {
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
-async function createWardInGold(dir: string, name: string, tests: number): Promise<number> {
+const CORE_WARD_ID = "core-001";
+
+function coreWardPath(dir: string): string {
+  return path.join(dir, ".wdd", "wards", "core", "ward-001.md");
+}
+
+async function createWardInGold(dir: string, name: string, tests: number): Promise<string> {
   await createWard(dir, { name, epic: "core", layer: "rust", tests });
-  const files = fs.readdirSync(path.join(dir, ".wdd", "wards"))
-    .filter((f) => /^ward-\d+\.md$/.test(f));
-  const num = files.length;
-  await updateWardStatus(dir, num, "red");
-  await updateWardStatus(dir, num, "approved");
-  await updateWardStatus(dir, num, "gold");
-  return num;
+  await updateWardStatus(dir, CORE_WARD_ID, "red");
+  await updateWardStatus(dir, CORE_WARD_ID, "approved");
+  await updateWardStatus(dir, CORE_WARD_ID, "gold");
+  return CORE_WARD_ID;
 }
 
 describe("Ward 005: Ward Complete Flow", () => {
@@ -42,11 +45,11 @@ describe("Ward 005: Ward Complete Flow", () => {
 
   // Test 1: ward transitions to complete
   it("complete_transitions_to_complete", async () => {
-    const num = await createWardInGold(tmpDir, "Test Ward", 5);
-    await completeWard(tmpDir, num);
+    const wardId = await createWardInGold(tmpDir, "Test Ward", 5);
+    await completeWard(tmpDir, wardId);
 
     const content = fs.readFileSync(
-      path.join(tmpDir, ".wdd", "wards", "ward-001.md"),
+      coreWardPath(tmpDir),
       "utf-8"
     );
     const { frontmatter } = parseFrontmatter(content);
@@ -62,11 +65,11 @@ describe("Ward 005: Ward Complete Flow", () => {
       "# Context\n\nUnique snapshot content 12345\n"
     );
 
-    const num = await createWardInGold(tmpDir, "Test Ward", 5);
-    await completeWard(tmpDir, num);
+    const wardId = await createWardInGold(tmpDir, "Test Ward", 5);
+    await completeWard(tmpDir, wardId);
 
     const snapshotPath = path.join(
-      tmpDir, ".wdd", "memory", "snapshots", "ward-001-complete.md"
+      tmpDir, ".wdd", "memory", "snapshots", "ward-core-001-complete.md"
     );
     assert.ok(fs.existsSync(snapshotPath), "Snapshot file should exist");
 
@@ -79,8 +82,8 @@ describe("Ward 005: Ward Complete Flow", () => {
 
   // Test 3: PROGRESS.md regenerated
   it("complete_regenerates_progress", async () => {
-    const num = await createWardInGold(tmpDir, "Test Ward", 5);
-    await completeWard(tmpDir, num);
+    const wardId = await createWardInGold(tmpDir, "Test Ward", 5);
+    await completeWard(tmpDir, wardId);
 
     const progress = fs.readFileSync(
       path.join(tmpDir, ".wdd", "PROGRESS.md"),
@@ -95,7 +98,7 @@ describe("Ward 005: Ward Complete Flow", () => {
     await createWard(tmpDir, { name: "Planned Ward", epic: "core", layer: "rust", tests: 5 });
 
     await assert.rejects(
-      () => completeWard(tmpDir, 1),
+      () => completeWard(tmpDir, "core-001"),
       (err: Error) => {
         assert.ok(
           err.message.includes("gold"),
@@ -132,8 +135,8 @@ describe("Ward 005: Ward Complete Flow", () => {
 
   // Test 7: summary has correct counts
   it("progress_summary_counts", async () => {
-    const num1 = await createWardInGold(tmpDir, "Done Ward", 5);
-    await updateWardStatus(tmpDir, num1, "complete");
+    const wardId = await createWardInGold(tmpDir, "Done Ward", 5);
+    await updateWardStatus(tmpDir, wardId, "complete");
     await createWard(tmpDir, { name: "Pending Ward", epic: "core", layer: "rust", tests: 3 });
 
     const progress = regenerateProgress(tmpDir);
@@ -145,8 +148,8 @@ describe("Ward 005: Ward Complete Flow", () => {
 
   // Test 8: returns step descriptions
   it("complete_prints_steps", async () => {
-    const num = await createWardInGold(tmpDir, "Test Ward", 5);
-    const result = await completeWard(tmpDir, num);
+    const wardId = await createWardInGold(tmpDir, "Test Ward", 5);
+    const result = await completeWard(tmpDir, wardId);
 
     assert.ok(Array.isArray(result.steps), "Should return steps array");
     assert.ok(result.steps.length >= 3, "Should have at least 3 steps");

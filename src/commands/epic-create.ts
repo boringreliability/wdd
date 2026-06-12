@@ -20,19 +20,16 @@ export async function createEpic(
   }
 
   const epicsDir = path.join(projectDir, ".wdd", "epics");
-  const nextNumber = getNextEpicNumber(epicsDir);
-  const padded = String(nextNumber).padStart(2, "0");
   const today = todayIso();
 
   const frontmatter: Record<string, unknown> = {
     epic: options.slug,
     name: options.name,
-    number: nextNumber,
     status: "active",
     created: today,
   };
 
-  const body = `# Epic ${padded}: ${options.name}
+  const body = `# Epic: ${options.name}
 
 ## Goal
 {What this epic achieves as a whole}
@@ -49,28 +46,11 @@ export async function createEpic(
 `;
 
   const content = serializeFrontmatter(frontmatter, body);
-  const filename = `${padded}-${options.slug}.md`;
+  const filename = `${options.slug}.md`;
   const filePath = path.join(epicsDir, filename);
 
   fs.writeFileSync(filePath, content);
   console.log(`Created ${filename}: ${options.name}`);
 
   return filePath;
-}
-
-function getNextEpicNumber(epicsDir: string): number {
-  if (!fs.existsSync(epicsDir)) return 1;
-
-  const files = fs.readdirSync(epicsDir);
-  let maxNumber = 0;
-
-  for (const file of files) {
-    const match = file.match(/^(\d+)-.*\.md$/);
-    if (match) {
-      const num = parseInt(match[1], 10);
-      if (num > maxNumber) maxNumber = num;
-    }
-  }
-
-  return maxNumber + 1;
 }

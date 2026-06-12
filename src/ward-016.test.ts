@@ -52,17 +52,19 @@ async function run(
   }
 }
 
-async function createCompletedWard(dir: string, name: string): Promise<number> {
+const CORE_WARD_ID = "core-001";
+
+function coreWardPath(dir: string, revision = ""): string {
+  return path.join(dir, ".wdd", "wards", "core", `ward-001${revision}.md`);
+}
+
+async function createCompletedWard(dir: string, name: string): Promise<string> {
   await createWard(dir, { name, epic: "core", layer: "typescript", tests: 1 });
-  const num = fs
-    .readdirSync(path.join(dir, ".wdd", "wards"))
-    .filter((f) => /^ward-\d+\.md$/.test(f))
-    .length;
-  await updateWardStatus(dir, num, "red");
-  await updateWardStatus(dir, num, "approved");
-  await updateWardStatus(dir, num, "gold");
-  await completeWard(dir, num);
-  return num;
+  await updateWardStatus(dir, CORE_WARD_ID, "red");
+  await updateWardStatus(dir, CORE_WARD_ID, "approved");
+  await updateWardStatus(dir, CORE_WARD_ID, "gold");
+  await completeWard(dir, CORE_WARD_ID);
+  return CORE_WARD_ID;
 }
 
 describe("Ward 016: inventoryExports", () => {
@@ -213,19 +215,19 @@ describe("Ward 016: revision-aware command IDs", () => {
 
   // Test 7: completeWard accepts revision string
   it("complete_accepts_revision_string", async () => {
-    const num = await createCompletedWard(tmpDir, "Original");
-    await reopenWard(tmpDir, num, "needs fix");
+    const wardId = await createCompletedWard(tmpDir, "Original");
+    await reopenWard(tmpDir, wardId, "needs fix");
 
     // Take ward-001b through TDD cycle to gold using string IDs
-    await updateWardStatus(tmpDir, "1b", "red");
-    await updateWardStatus(tmpDir, "1b", "approved");
-    await updateWardStatus(tmpDir, "1b", "gold");
+    await updateWardStatus(tmpDir, "core-001b", "red");
+    await updateWardStatus(tmpDir, "core-001b", "approved");
+    await updateWardStatus(tmpDir, "core-001b", "gold");
 
     // Now complete it via string id — this is what's being tested
-    await completeWard(tmpDir, "1b");
+    await completeWard(tmpDir, "core-001b");
 
     const fixContent = fs.readFileSync(
-      path.join(tmpDir, ".wdd", "wards", "ward-001b.md"),
+      coreWardPath(tmpDir, "b"),
       "utf-8"
     );
     const { frontmatter } = parseFrontmatter(fixContent);
@@ -235,20 +237,20 @@ describe("Ward 016: revision-aware command IDs", () => {
 
   // Test 8: reopenWard accepts revision string (reopens a fix ward → creates ward-001c)
   it("reopen_accepts_revision_string", async () => {
-    const num = await createCompletedWard(tmpDir, "Original");
-    await reopenWard(tmpDir, num, "first fix");
+    const wardId = await createCompletedWard(tmpDir, "Original");
+    await reopenWard(tmpDir, wardId, "first fix");
 
     // Take 1b through complete
-    await updateWardStatus(tmpDir, "1b", "red");
-    await updateWardStatus(tmpDir, "1b", "approved");
-    await updateWardStatus(tmpDir, "1b", "gold");
-    await completeWard(tmpDir, "1b");
+    await updateWardStatus(tmpDir, "core-001b", "red");
+    await updateWardStatus(tmpDir, "core-001b", "approved");
+    await updateWardStatus(tmpDir, "core-001b", "gold");
+    await completeWard(tmpDir, "core-001b");
 
     // Now reopen 1b via string id — this should create ward-001c.md
-    await reopenWard(tmpDir, "1b", "second fix");
+    await reopenWard(tmpDir, "core-001b", "second fix");
 
     assert.ok(
-      fs.existsSync(path.join(tmpDir, ".wdd", "wards", "ward-001c.md")),
+      fs.existsSync(coreWardPath(tmpDir, "c")),
       "Reopening 1b should create ward-001c.md"
     );
   });
@@ -257,18 +259,18 @@ describe("Ward 016: revision-aware command IDs", () => {
   it("cli_status_revision_id", async () => {
     await run(["init", "--name", "cli-rev"], tmpDir);
     await run(["ward", "create", "Original", "--epic", "core"], tmpDir);
-    await run(["ward", "status", "1", "red"], tmpDir);
-    await run(["ward", "status", "1", "approved"], tmpDir);
-    await run(["ward", "status", "1", "gold"], tmpDir);
-    await run(["complete", "1"], tmpDir);
-    await run(["ward", "reopen", "1", "--reason", "needs work"], tmpDir);
+    await run(["ward", "status", "core-001", "red"], tmpDir);
+    await run(["ward", "status", "core-001", "approved"], tmpDir);
+    await run(["ward", "status", "core-001", "gold"], tmpDir);
+    await run(["complete", "core-001"], tmpDir);
+    await run(["ward", "reopen", "core-001", "--reason", "needs work"], tmpDir);
 
     // The bug: this used to fail because parseInt("1b") = 1 and ward 1 is already complete.
-    const result = await run(["ward", "status", "1b", "red"], tmpDir);
-    assert.equal(result.code, 0, `wdd ward status 1b red should exit 0. stderr: ${result.stderr}`);
+    const result = await run(["ward", "status", "core-001b", "red"], tmpDir);
+    assert.equal(result.code, 0, `wdd ward status core-001b red should exit 0. stderr: ${result.stderr}`);
 
     const fixContent = fs.readFileSync(
-      path.join(tmpDir, ".wdd", "wards", "ward-001b.md"),
+      coreWardPath(tmpDir, "b"),
       "utf-8"
     );
     const { frontmatter } = parseFrontmatter(fixContent);
@@ -277,11 +279,11 @@ describe("Ward 016: revision-aware command IDs", () => {
 
   // Test 10: reopen body has Manual Smoke Test section
   it("reopen_body_has_smoke_test_section", async () => {
-    const num = await createCompletedWard(tmpDir, "Original");
-    await reopenWard(tmpDir, num, "smoke parity check");
+    const wardId = await createCompletedWard(tmpDir, "Original");
+    await reopenWard(tmpDir, wardId, "smoke parity check");
 
     const fixContent = fs.readFileSync(
-      path.join(tmpDir, ".wdd", "wards", "ward-001b.md"),
+      coreWardPath(tmpDir, "b"),
       "utf-8"
     );
     const { body } = parseFrontmatter(fixContent);

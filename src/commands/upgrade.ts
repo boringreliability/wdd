@@ -2,8 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { readConfig, configPath, DEFAULT_SCAN } from "../utils/config.js";
 import { WARD_TEMPLATE } from "../templates/ward-body.js";
+import { parseFrontmatter, serializeFrontmatter } from "../frontmatter.js";
+import { formatFrontmatterWardId } from "../utils/ward-id.js";
 
-export const CURRENT_SCHEMA_VERSION = "1.2";
+export const CURRENT_SCHEMA_VERSION = "1.3";
 
 export interface MigrationStep {
   action: "create" | "overwrite" | "ensure-dir" | "patch";
@@ -32,6 +34,7 @@ interface MigrationEntry {
 export const MIGRATIONS: Record<string, MigrationEntry> = {
   "1.0": { to: "1.1", fn: migrateFrom_1_0_to_1_1 },
   "1.1": { to: "1.2", fn: migrateFrom_1_1_to_1_2 },
+  "1.2": { to: "1.3", fn: migrateFrom_1_2_to_1_3 },
 };
 
 export function upgradeProject(
@@ -170,6 +173,121 @@ function migrateFrom_1_1_to_1_2(projectDir: string, dryRun: boolean): MigrationS
   }
 
   return steps;
+}
+
+function migrateFrom_1_2_to_1_3(projectDir: string, dryRun: boolean): MigrationStep[] {
+  const steps: MigrationStep[] = [];
+  const wddDir = path.join(projectDir, ".wdd");
+  const epicsDir = path.join(wddDir, "epics");
+  const wardsDir = path.join(wddDir, "wards");
+  const wardEpicByNumber = new Map<number, string>();
+
+  if (fs.existsSync(wardsDir)) {
+    for (const file of fs.readdirSync(wardsDir)) {
+      const legacyWardMatch = file.match(/^ward-(\d{3})([a-z])?\.md$/);
+      if (!legacyWardMatch) continue;
+
+      const filePath = path.join(wardsDir, file);
+      const { frontmatter } = parseFrontmatter(fs.readFileSync(filePath, "utf-8"));
+      if (typeof frontmatter.epic === "string") {
+        wardEpicByNumber.set(Number(frontmatter.ward), frontmatter.epic);
+      }
+    }
+  }
+
+  if (fs.existsSync(epicsDir)) {
+    for (const file of fs.readdirSync(epicsDir)) {
+      const legacyEpicMatch = file.match(/^\d+-(.+)\.md$/);
+      if (!legacyEpicMatch) continue;
+
+      const oldPath = path.join(epicsDir, file);
+      const { frontmatter, body } = parseFrontmatter(fs.readFileSync(oldPath, "utf-8"));
+      const slug = typeof frontmatter.epic === "string" ? frontmatter.epic : legacyEpicMatch[1];
+      const newPath = path.join(epicsDir, `${slug}.md`);
+      const nextFrontmatter = { ...frontmatter };
+      delete nextFrontmatter.number;
+      const nextBody = body.replace(/^# Epic \d+:\s*/m, "# Epic: ");
+
+      steps.push({
+        action: "patch",
+        path: `.wdd/epics/${file} → .wdd/epics/${slug}.md`,
+        description: "Rename legacy numbered epic file to slug-only filename",
+      });
+
+      if (!dryRun) {
+        fs.writeFileSync(newPath, serializeFrontmatter(nextFrontmatter, nextBody));
+        if (oldPath !== newPath) fs.rmSync(oldPath, { force: true });
+      }
+    }
+  }
+
+  if (fs.existsSync(wardsDir)) {
+    for (const file of fs.readdirSync(wardsDir)) {
+      const legacyWardMatch = file.match(/^ward-(\d{3})([a-z])?\.md$/);
+      if (!legacyWardMatch) continue;
+
+      const oldPath = path.join(wardsDir, file);
+      const { frontmatter, body } = parseFrontmatter(fs.readFileSync(oldPath, "utf-8"));
+      const epic = typeof frontmatter.epic === "string" ? frontmatter.epic : "legacy";
+      const newDir = path.join(wardsDir, epic);
+      const newPath = path.join(newDir, file);
+      const dependencies = Array.isArray(frontmatter.dependencies)
+        ? frontmatter.dependencies.map((dependency) =>
+          scopeLegacyDependency(dependency, wardEpicByNumber, epic)
+        )
+        : [];
+      const nextFrontmatter = { ...frontmatter, dependencies };
+
+      steps.push({
+        action: "patch",
+        path: `.wdd/wards/${file} → .wdd/wards/${epic}/${file}`,
+        description: "Move legacy Ward into its owning epic directory and scope dependencies",
+      });
+
+      if (!dryRun) {
+        fs.mkdirSync(newDir, { recursive: true });
+        fs.writeFileSync(newPath, serializeFrontmatter(nextFrontmatter, body));
+        if (oldPath !== newPath) fs.rmSync(oldPath, { force: true });
+      }
+    }
+  }
+
+  steps.push({
+    action: "patch",
+    path: ".wdd/config.json",
+    description: `Bump wdd_version: "1.2" → "1.3"`,
+  });
+
+  if (!dryRun) {
+    const cfgPath = configPath(projectDir);
+    const config: Record<string, unknown> = readConfig(projectDir) ?? {};
+    config.wdd_version = "1.3";
+    delete config.ward_prefix;
+    delete config.ward_digits;
+    fs.writeFileSync(cfgPath, JSON.stringify(config, null, 2));
+  }
+
+  return steps;
+}
+
+function scopeLegacyDependency(
+  dependency: unknown,
+  wardEpicByNumber: Map<number, string>,
+  fallbackEpic: string
+): unknown {
+  if (typeof dependency === "number") {
+    const dependencyEpic = wardEpicByNumber.get(dependency) ?? fallbackEpic;
+    return formatFrontmatterWardId(dependency, null, dependencyEpic);
+  }
+
+  if (typeof dependency !== "string") return dependency;
+
+  const numericMatch = dependency.match(/^(\d+)([a-z])?$/);
+  if (!numericMatch) return dependency;
+
+  const dependencyNumber = parseInt(numericMatch[1], 10);
+  const dependencyEpic = wardEpicByNumber.get(dependencyNumber) ?? fallbackEpic;
+  return formatFrontmatterWardId(dependencyNumber, numericMatch[2] ?? null, dependencyEpic);
 }
 
 function compareVersions(a: string, b: string): number {
