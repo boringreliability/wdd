@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-06-12
+
+### Added
+- Epic-scoped Ward IDs, e.g. `drive-polish-001`, to avoid global Ward number
+  conflicts across parallel branches.
+- Slug-only epic files, e.g. `.wdd/epics/drive-polish.md`.
+- Schema `1.3` upgrade migration that moves legacy root-level Wards into
+  `.wdd/wards/<epic>/`, renames numbered epic files, and rewrites dependencies
+  to scoped Ward IDs.
+
+### Changed
+- New Wards are created under their owning epic directory and numbered per epic.
+- `wdd session`, `validate`, `progress`, `graph`, `ready`, `complete`,
+  `status`, and `reopen` understand scoped Ward paths while retaining legacy
+  root-level Ward compatibility.
+- README, framework spec, and generated AI adapter instructions now document
+  scoped Ward IDs.
+
 ## [0.3.0] — 2026-06-03
 
 ### Added
@@ -52,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   chose the scoped form matching the GitHub org. Always install via the scoped
   name.
 
-[Unreleased]: https://github.com/boringreliability/wdd/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/boringreliability/wdd/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/boringreliability/wdd/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/boringreliability/wdd/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/boringreliability/wdd/releases/tag/v0.2.0
