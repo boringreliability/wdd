@@ -79,7 +79,7 @@ Commands:
   ward reopen         Reopen a completed Ward
   complete            Complete a Ward (step-by-step)
   epic create         Create a new Epic
-  session             Assemble context for AI consumption
+  session             Assemble context for AI consumption [--epic <slug>]
   status              Show progress dashboard
   progress            Regenerate PROGRESS.md
   validate            Check structure and invariants
@@ -212,7 +212,10 @@ async function main(): Promise<void> {
       break;
     }
     case "session": {
-      const output = assembleSession(process.cwd(), { clock: clockFromEnv() });
+      const output = assembleSession(process.cwd(), {
+        clock: clockFromEnv(),
+        epic: getFlag("epic"),
+      });
       process.stdout.write(output);
       break;
     }

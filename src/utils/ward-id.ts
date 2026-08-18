@@ -151,3 +151,20 @@ export function resolveWardFile(projectDir: string, wardId: number | string): st
 
   throw new Error(`Ward file not found: ${filename}`);
 }
+
+/**
+ * Resolve a dependency token relative to the current Ward's epic.
+ * Numeric `2` inside epic `core` becomes `core-2`. Already-scoped ids pass through.
+ */
+export function normalizeWardId(value: unknown, currentEpic: string | null): string {
+  if (typeof value === "number" && currentEpic) {
+    return formatFrontmatterWardId(value, null, currentEpic);
+  }
+
+  const parsed = typeof value === "string" ? parseWardId(value) : null;
+  if (parsed && !parsed.epic && currentEpic) {
+    return formatFrontmatterWardId(parsed.num, parsed.revision, currentEpic);
+  }
+
+  return String(value);
+}

@@ -54,9 +54,14 @@ describe("Ward 009: Complete Output Enhancements", () => {
     const wardId = await createWardInGold(tmpDir, "Auth Module");
     const result = await completeWard(tmpDir, wardId);
 
+    const joined = result.steps.join("\n");
     assert.ok(
-      result.steps.some((s) => s.includes("CONTEXT.md")),
-      `Should contain CONTEXT.md reminder: ${result.steps}`
+      joined.includes("CONTEXT.md"),
+      `Should mention CONTEXT.md: ${result.steps}`
+    );
+    assert.ok(
+      !joined.includes('Update "Current State"'),
+      `Must not ask for a Current State diary: ${result.steps}`
     );
   });
 

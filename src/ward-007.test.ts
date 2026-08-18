@@ -99,7 +99,7 @@ describe("Ward 007: Validate Command", () => {
 
   // Test 6: CONTEXT.md over 200 lines = error
   it("validate_context_over_limit", () => {
-    const lines = Array.from({ length: 210 }, (_, i) => `Line ${i + 1}`).join("\n");
+    const lines = ["## Active Constraints", "", ...Array.from({ length: 210 }, (_, i) => `Line ${i + 1}`)].join("\n");
     fs.writeFileSync(path.join(tmpDir, ".wdd", "CONTEXT.md"), lines);
 
     const result = validateProject(tmpDir);
@@ -112,7 +112,7 @@ describe("Ward 007: Validate Command", () => {
 
   // Test 7: CONTEXT.md over 150 lines = warning
   it("validate_context_warning", () => {
-    const lines = Array.from({ length: 160 }, (_, i) => `Line ${i + 1}`).join("\n");
+    const lines = ["## Active Constraints", "", ...Array.from({ length: 160 }, (_, i) => `Line ${i + 1}`)].join("\n");
     fs.writeFileSync(path.join(tmpDir, ".wdd", "CONTEXT.md"), lines);
 
     const result = validateProject(tmpDir);

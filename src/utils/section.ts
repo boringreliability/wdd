@@ -48,6 +48,24 @@ export function extractSection(body: string, heading: string): string {
   return lines.slice(startIdx + 1, endIdx).join("\n").trim();
 }
 
+/**
+ * True when `## {heading}` appears as a real section marker, not inside a fence.
+ * Distinguishes "heading missing" from "heading present with an empty body"
+ * — extractSection returns "" for both.
+ */
+export function hasHeading(body: string, heading: string): boolean {
+  const target = `## ${heading}`;
+  let inFence = false;
+  for (const line of body.split("\n")) {
+    if (isFenceLine(line)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (!inFence && line.trimEnd() === target) return true;
+  }
+  return false;
+}
+
 function isFenceLine(line: string): boolean {
   return /^```/.test(line.trimStart());
 }

@@ -4,6 +4,7 @@ import { parseFrontmatter } from "../frontmatter.js";
 import { isStatus } from "../utils/status.js";
 import { type Clock, defaultClock } from "../utils/clock.js";
 import { listWardFiles } from "../utils/ward-id.js";
+import { classifyContextLogbook } from "../utils/working-memory.js";
 import {
   buildDependencyGraph,
   findOrphanedDependencies,
@@ -75,6 +76,10 @@ export function validateProject(
 
     if (byteSize > CONTEXT_MAX_BYTES) {
       errors.push(`CONTEXT.md exceeds 8KB limit (${byteSize} bytes)`);
+    }
+
+    for (const finding of classifyContextLogbook(content)) {
+      errors.push(`CONTEXT.md: ${finding.heading} — ${finding.reason}`);
     }
   }
 

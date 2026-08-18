@@ -12,12 +12,19 @@ import { parseBacklog, findStaleBacklogItems } from "../utils/backlog.js";
 import { type Clock, defaultClock } from "../utils/clock.js";
 import {
   formatFrontmatterDisplayWardId,
-  frontmatterEpicForWard,
   listWardFiles,
 } from "../utils/ward-id.js";
+import {
+  formatWorkingMemory,
+  listInFlightWards,
+  matchesEpic,
+  renderContextConstraints,
+  resolveEpic,
+} from "../utils/working-memory.js";
 
 export interface SessionOptions {
   clock?: Clock;
+  epic?: string;
 }
 
 export type SectionHandler = (projectDir: string, opts: SessionOptions) => string;
@@ -25,6 +32,7 @@ export type SectionHandler = (projectDir: string, opts: SessionOptions) => strin
 export const SECTION_HANDLERS: Record<string, SectionHandler> = {
   PROJECT: renderProject,
   CONTEXT: renderContext,
+  WORKING_MEMORY: renderWorkingMemory,
   PROGRESS: renderProgress,
   PLANNED: renderPlanned,
   EXPORTS: renderExports,
@@ -34,6 +42,7 @@ export const SECTION_HANDLERS: Record<string, SectionHandler> = {
 export const SESSION_SECTIONS = [
   "PROJECT",
   "CONTEXT",
+  "WORKING_MEMORY",
   "PROGRESS",
   "PLANNED",
   "EXPORTS",
@@ -79,7 +88,12 @@ function renderProject(projectDir: string): string {
 function renderContext(projectDir: string): string {
   const file = path.join(projectDir, ".wdd", "CONTEXT.md");
   if (!fs.existsSync(file)) return "";
-  return `═══ CONTEXT ═══\n${fs.readFileSync(file, "utf-8").trim()}`;
+  return `═══ CONTEXT ═══\n${renderContextConstraints(fs.readFileSync(file, "utf-8"))}`;
+}
+
+function renderWorkingMemory(projectDir: string, opts: SessionOptions): string {
+  const wards = listInFlightWards(projectDir, opts.epic);
+  return `═══ WORKING MEMORY ═══\n${formatWorkingMemory(wards, opts.epic)}`;
 }
 
 function renderProgress(projectDir: string): string {
@@ -143,9 +157,9 @@ function renderExports(projectDir: string): string {
   return `═══ EXPORTS ═══\n${formatInventory(inventoryExports(projectDir))}`;
 }
 
-function renderCurrentWard(projectDir: string): string {
+function renderCurrentWard(projectDir: string, opts: SessionOptions): string {
   const wddDir = path.join(projectDir, ".wdd");
-  const currentWard = findCurrentWard(wddDir);
+  const currentWard = findCurrentWard(wddDir, opts.epic);
   if (currentWard) {
     return `═══ CURRENT WARD: ${currentWard.id} — ${currentWard.name} ═══\n${currentWard.content.trim()}`;
   }
@@ -158,7 +172,7 @@ interface CurrentWard {
   content: string;
 }
 
-function findCurrentWard(wddDir: string): CurrentWard | null {
+function findCurrentWard(wddDir: string, epic?: string): CurrentWard | null {
   const wardsDir = path.join(wddDir, "wards");
   if (!fs.existsSync(wardsDir)) return null;
 
@@ -168,18 +182,19 @@ function findCurrentWard(wddDir: string): CurrentWard | null {
     const content = fs.readFileSync(file.filePath, "utf-8");
     const { frontmatter } = parseFrontmatter(content);
 
-    if (frontmatter.status !== "complete") {
-      const epic = frontmatterEpicForWard(frontmatter, file);
-      return {
-        id: formatFrontmatterDisplayWardId(
-          frontmatter.ward as number,
-          frontmatter.revision,
-          epic
-        ),
-        name: frontmatter.name as string,
-        content,
-      };
-    }
+    if (frontmatter.status === "complete") continue;
+    if (epic !== undefined && !matchesEpic(frontmatter, file, epic)) continue;
+
+    const resolvedEpic = resolveEpic(frontmatter, file);
+    return {
+      id: formatFrontmatterDisplayWardId(
+        frontmatter.ward as number,
+        frontmatter.revision,
+        resolvedEpic || null
+      ),
+      name: frontmatter.name as string,
+      content,
+    };
   }
 
   return null;

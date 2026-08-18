@@ -69,10 +69,9 @@ export async function completeWard(
   steps.push(`→ Remember to commit: git add .wdd/ && git commit -m "Ward ${wardId} complete: ${wardName}"`);
 
   steps.push(
-    `⚠ CONTEXT.md was not modified. Review and update it now:\n` +
-      `  - Update "Current State" to reflect Ward ${wardId} completion\n` +
-      `  - Update "What Comes Next" for the next Ward\n` +
-      `  - Run: wdd validate (checks CONTEXT.md size)`
+    `Working memory is generated — do not append a diary to CONTEXT.md.\n` +
+      `If this Ward created a lasting invariant, add one bullet under Active Constraints.\n` +
+      `Run: wdd validate`
   );
 
   const smokeTest = extractSection(body, "Manual Smoke Test");

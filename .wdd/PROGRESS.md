@@ -1,11 +1,13 @@
 # Progress — wdd
 
 ## Summary
-23 of 29 Wards complete · 226 estimated tests · 0 blocked
+24 of 31 Wards complete · 244 estimated tests · 0 blocked
 
 ## Ward Status
 | Ward | Name | Tests | Status | Date |
 |------|------|-------|--------|------|
+| context-001 | Derived working memory | 14 | ✅ Complete | 2026-08-18 |
+| context-002 | Dogfood working memory | 4 | 📋 Planned | - |
 | 001 | Project Scaffold + Init | 10 | ✅ Complete | 2026-03-14 |
 | 002 | Ward Creation | 8 | ✅ Complete | 2026-03-14 |
 | 003 | Ward Status Transitions | 10 | ✅ Complete | 2026-03-14 |
@@ -37,4 +39,4 @@
 | 026 | WDD Copilot Adapter | 7 | ✅ Complete | 2026-06-03 |
 
 ## Test Summary
-- Estimated total: 226
+- Estimated total: 244

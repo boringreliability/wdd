@@ -4,7 +4,7 @@
 
 ### Priority 2 — Should Have
 - [ ] **CLI-013**: `wdd bootstrap windsurf` — Windsurf adapter
-- [ ] **CLI-014**: `wdd condense` — CONTEXT.md size management
+- [ ] **CLI-014**: `wdd condense` — superseded by context-001 (generated working memory). Close in context-002.
 - [ ] **CLI-016**: Real-world validation in another project (kmd-regelsim, vgrid)
 
 ### Priority 3 — Nice to Have

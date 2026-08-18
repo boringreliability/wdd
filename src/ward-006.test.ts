@@ -39,7 +39,10 @@ describe("Ward 006: Session Command", () => {
   it("session_includes_context", () => {
     const output = assembleSession(tmpDir);
     assert.ok(output.includes("═══ CONTEXT ═══"), "Should have CONTEXT section header");
-    assert.ok(output.includes("Current State"), "Should include CONTEXT.md content");
+    assert.ok(
+      output.includes("Active Constraints"),
+      "Should include CONTEXT.md Active Constraints"
+    );
   });
 
   // Test 3: output contains PROGRESS.md content

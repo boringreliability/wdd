@@ -6,7 +6,7 @@ import {
   formatFrontmatterWardId,
   frontmatterEpicForWard,
   listWardFiles,
-  parseWardId,
+  normalizeWardId,
   resolveWardFile,
 } from "../utils/ward-id.js";
 
@@ -43,19 +43,6 @@ export function compareWardId(a: WardId, b: WardId): number {
   if (aNum !== bNum) return aNum - bNum;
 
   return aMatch[3].localeCompare(bMatch[3]);
-}
-
-function normalizeWardId(value: unknown, currentEpic: string | null): WardId {
-  if (typeof value === "number" && currentEpic) {
-    return formatFrontmatterWardId(value, null, currentEpic);
-  }
-
-  const parsed = typeof value === "string" ? parseWardId(value) : null;
-  if (parsed && !parsed.epic && currentEpic) {
-    return formatFrontmatterWardId(parsed.num, parsed.revision, currentEpic);
-  }
-
-  return String(value);
 }
 
 function formatForDisplay(id: WardId): string {

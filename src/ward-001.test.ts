@@ -73,8 +73,18 @@ describe("Ward 001: Project Scaffold + Init", () => {
       "utf-8"
     );
     assert.ok(contextMd.includes("# Context"), "CONTEXT.md should have title");
-    assert.ok(contextMd.includes("## Current State"), "CONTEXT.md should have Current State");
-    assert.ok(contextMd.includes("## What Comes Next"), "CONTEXT.md should have What Comes Next");
+    assert.ok(
+      contextMd.includes("## Active Constraints"),
+      "CONTEXT.md should have Active Constraints"
+    );
+    assert.ok(
+      !contextMd.includes("## Architecture Decisions Made"),
+      "CONTEXT.md must not scaffold an Architecture Decisions log"
+    );
+    assert.ok(
+      !contextMd.includes("## Current State"),
+      "CONTEXT.md must not scaffold Current State"
+    );
   });
 
   // Test 4: init creates config.json with defaults
